@@ -11,12 +11,15 @@ class LoadingWidget extends StatefulWidget {
 class _LoadingWidgetState extends State<LoadingWidget> {
   @override
   Widget build(BuildContext context) {
-    return LoadingIndicator(
-        indicatorType: Indicator.orbit,
-        colors: const [Colors.white, Colors.yellow],
-        strokeWidth: 2,
-        backgroundColor: Color(0xFF002d56),
-        pathBackgroundColor: Colors.black
+    return Container(
+      margin: EdgeInsets.all(90),
+      child: LoadingIndicator(
+          indicatorType: Indicator.circleStrokeSpin,
+          colors: const [Colors.white, Colors.red],
+          strokeWidth: 3,
+          backgroundColor: Color(0xFFFFFF),
+          pathBackgroundColor: Colors.black
+      ),
     );
   }
 }

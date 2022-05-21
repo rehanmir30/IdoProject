@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gumshoe/Models/size_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Models/onboarding_contents.dart';
 import 'LoginScreen.dart';
@@ -31,6 +32,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       width: _currentPage == index ? 20 : 10,
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -142,6 +144,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              ElevatedButton(
+                              onPressed: () {
+                  _controller.nextPage(
+                  duration: Duration(milliseconds: 200),
+                  curve: Curves.easeIn,
+                  );
+                  },
+                    child: Text("NEXT"),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.black,
+                      shape: new RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      elevation: 0,
+                      padding: (width <= 550)
+                          ? EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 20)
+                          : EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 25),
+                      textStyle: TextStyle(
+                          fontSize: (width <= 550) ? 13 : 17),
+                    ),
+                  ),
                               TextButton(
                                 onPressed: () {
                                   _controller.jumpToPage(2);
@@ -156,29 +181,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     fontWeight: FontWeight.w600,
                                     fontSize: (width <= 550) ? 13 : 17,
                                   ),
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  _controller.nextPage(
-                                    duration: Duration(milliseconds: 200),
-                                    curve: Curves.easeIn,
-                                  );
-                                },
-                                child: Text("NEXT"),
-                                style: ElevatedButton.styleFrom(
-                                  primary: Colors.black,
-                                  shape: new RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  elevation: 0,
-                                  padding: (width <= 550)
-                                      ? EdgeInsets.symmetric(
-                                          horizontal: 30, vertical: 20)
-                                      : EdgeInsets.symmetric(
-                                          horizontal: 30, vertical: 25),
-                                  textStyle: TextStyle(
-                                      fontSize: (width <= 550) ? 13 : 17),
                                 ),
                               ),
                             ],

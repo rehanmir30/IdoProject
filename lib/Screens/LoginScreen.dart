@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:gumshoe/Screens/ForgotPasswordScreen.dart';
 import 'package:gumshoe/Screens/HomeScreen.dart';
 import 'package:gumshoe/Screens/SignUpScreen.dart';
 import '../External Widgets/Loading.dart';
@@ -22,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
+  bool _isObscurePassword = true;
   var emailValid = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
@@ -91,9 +93,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           }
                         },
-                        obscureText: true,
+                        obscureText: _isObscurePassword,
                         textAlign: TextAlign.end,
                         decoration: InputDecoration(
+                          prefixIcon: IconButton(
+                            icon: Icon(_isObscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off),
+                            onPressed: () {
+                              setState(() {
+                                _isObscurePassword = !_isObscurePassword;
+                              });
+                            },
+                          ),
                           hintText: 'Password',
                           fillColor: Colors.grey.shade100,
                           filled: true,
@@ -104,11 +116,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Align(
-                      alignment: Alignment.topRight,
+                      alignment: Alignment.centerLeft,
                       child: Container(
-                        margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+                        margin: EdgeInsets.fromLTRB(10, 5, 0, 0),
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                            );
+                          },
                           child: Text(
                             'Forgot password?',
                             style: TextStyle(color: Colors.black),
@@ -117,29 +134,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+                      margin: EdgeInsets.fromLTRB(10, 5, 0, 0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           RaisedButton(
-                              padding: const EdgeInsets.fromLTRB(
-                                  30, 20, 30, 20),
+                              padding:
+                                  const EdgeInsets.fromLTRB(30, 20, 30, 20),
                               color: Color(0xFF002d56),
                               shape: RoundedRectangleBorder(
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(16.0))),
+                                      BorderRadius.all(Radius.circular(16.0))),
                               onPressed: () {
-
-                                // requestMultiplePermissions();
-
                                 if (formkey.currentState != null &&
                                     formkey.currentState!.validate()) {
                                   SignInFunc(Email, Password);
                                 }
                               },
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment
-                                    .spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     'LOG IN',
@@ -158,11 +171,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 20,bottom: 10),
-                      child: Text('Or', style: TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
+                      margin: EdgeInsets.only(top: 20, bottom: 10),
+                      child: Text('Or',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
                     ),
-                    Text('Continue with',style: TextStyle(color: Colors.grey,),),
+                    Text(
+                      'Continue with',
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -170,9 +189,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           Container(
                             width: 60,
                             height: 60,
-                            child: IconButton(onPressed: () {
-                              //LoginWithGoogle();
-                            },
+                            child: IconButton(
+                              onPressed: () {
+                                //LoginWithGoogle();
+                              },
                               icon: Image.asset("assets/images/googleicon.png"),
                             ),
                           ),
@@ -182,13 +202,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           Container(
                             width: 60,
                             height: 60,
-                            child: IconButton(onPressed: () {
-                              //LoginWithFacebook();
-                            },
-                              icon: Image.asset("assets/images/facebookicon.png"),
+                            child: IconButton(
+                              onPressed: () {
+                                //LoginWithFacebook();
+                              },
+                              icon:
+                                  Image.asset("assets/images/facebookicon.png"),
                             ),
                           )
-
                         ],
                       ),
                     ),
@@ -222,15 +243,14 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Positioned.fill(
                 child: Visibility(
-                  visible: viewVisible,
-                  child: Container(
-                    margin: EdgeInsets.only(left: 20, right: 20),
-                    child: Align(
-                        alignment: Alignment.center, child: LoadingWidget()),
-                  ),
-                ))
+              visible: viewVisible,
+              child: Container(
+                margin: EdgeInsets.only(left: 20, right: 20),
+                child:
+                    Align(alignment: Alignment.center, child: LoadingWidget()),
+              ),
+            ))
           ],
-
         ),
       ),
     );
@@ -241,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
     showWidget();
     FirebaseAuth _auth = await FirebaseAuth.instance;
     final databaseReference =
-    await FirebaseDatabase.instance.reference().child("Users");
+        await FirebaseDatabase.instance.reference().child("Users");
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -250,18 +270,14 @@ class _LoginScreenState extends State<LoginScreen> {
       await databaseReference.once().then((value) {
         if (value.snapshot.hasChild(user!.uid)) {
           String name =
-          value.snapshot
-              .child(user!.uid)
-              .child("Name")
-              .value
-              .toString();
+              value.snapshot.child(user!.uid).child("Name").value.toString();
 
           Navigator.pushAndRemoveUntil<dynamic>(
             context,
             MaterialPageRoute<dynamic>(
               builder: (BuildContext context) => HomeScreen(user!.uid, name),
             ),
-                (route) => false,
+            (route) => false,
           );
         }
       });
@@ -304,7 +320,6 @@ class _LoginScreenState extends State<LoginScreen> {
       viewVisible = false;
     });
   }
-
 }
 
 void requestMultiplePermissions() async {
@@ -312,9 +327,7 @@ void requestMultiplePermissions() async {
   if (status.isGranted) {
     print("Granted: ");
   } else if (status.isDenied) {
-    if (await Permission.location
-        .request()
-        .isGranted) {
+    if (await Permission.location.request().isGranted) {
       print("Grants");
     }
   }

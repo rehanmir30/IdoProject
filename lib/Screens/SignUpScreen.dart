@@ -13,13 +13,16 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  var Email, Password, Name, C_Password, longi, lati;
+  var Email, Password, Name, C_Password, longi, lati, Phone;
   final formkey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   TextEditingController name = TextEditingController();
   TextEditingController c_password = TextEditingController();
+  TextEditingController phone_number = TextEditingController();
   bool viewVisible = false;
+  bool _isObscurePassword = true;
+  bool _isObscureConPassword = true;
   var emailValid = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
@@ -113,9 +116,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           return null;
                         }
                       },
-                      obscureText: true,
+                      obscureText: _isObscurePassword,
                       textAlign: TextAlign.right,
                       decoration: InputDecoration(
+                        prefixIcon: IconButton(
+                          icon: Icon(_isObscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () {
+                            setState(() {
+                              _isObscurePassword = !_isObscurePassword;
+                            });
+                          },
+                        ),
                         hintText: 'Password',
                         fillColor: Colors.grey.shade100,
                         filled: true,
@@ -138,10 +151,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           return null;
                         }
                       },
-                      obscureText: true,
+                      obscureText: _isObscureConPassword,
                       textAlign: TextAlign.right,
                       decoration: InputDecoration(
+                        prefixIcon: IconButton(
+                          icon: Icon(_isObscureConPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () {
+                            setState(() {
+                              _isObscureConPassword = !_isObscureConPassword;
+                            });
+                          },
+                        ),
                         hintText: 'Confirm Password',
+                        fillColor: Colors.grey.shade100,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                    child: TextFormField(
+                      validator: (phone_number) {
+                        if (phone_number!.isEmpty || phone_number == null) {
+                          return "Enter phone number";
+                        } else {
+                          Phone = phone_number;
+                          return null;
+                        }
+                      },
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.right,
+                      decoration: InputDecoration(
+                        hintText: 'Phone Number',
                         fillColor: Colors.grey.shade100,
                         filled: true,
                         border: OutlineInputBorder(
@@ -165,7 +211,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             onPressed: () {
                               if (formkey.currentState != null &&
                                   formkey.currentState!.validate()) {
-                                SignUpFunc(Name, Email, Password);
+                                SignUpFunc(Name, Email, Password, Phone);
                               } else
                                 return;
                             },
@@ -238,9 +284,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
   }
 
-  Future<void> SignUpFunc(String name, String email, String password) async {
+  Future<void> SignUpFunc(
+      String name, String email, String password, String phone) async {
     showWidget();
-    String errorMessage="";
+    String errorMessage = "";
     await Firebase.initializeApp();
     String currentTime = DateTime.now().toString();
     try {
@@ -255,7 +302,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       var userid = userCredential.user!.uid;
       await databaseReference.child(userid).child("Name").set(name);
       await databaseReference.child(userid).child("Email").set(email);
-      await databaseReference.child(userid).child("Password").set(password);
+      await databaseReference.child(userid).child("Phone").set(phone);
       await databaseReference
           .child(userid)
           .child("Created at")
@@ -298,7 +345,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
         case "ERROR_USER_DISABLED":
           hideWidget();
           Fluttertoast.showToast(
-              msg: "Provided email has been disabled. Contact support for more.",
+              msg:
+                  "Provided email has been disabled. Contact support for more.",
               toastLength: Toast.LENGTH_LONG,
               gravity: ToastGravity.CENTER,
               timeInSecForIosWeb: 1,
@@ -352,7 +400,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               textColor: Colors.white,
               fontSize: 16.0);
       }
-
     }
   }
 }

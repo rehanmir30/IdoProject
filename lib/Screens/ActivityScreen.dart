@@ -22,7 +22,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
   var camera_lati ;
   GoogleMapController? controllers;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
-  LatLng _center =  LatLng(9.669111, 80.014007);
 
   @override
   void initState() {

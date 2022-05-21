@@ -5,11 +5,14 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gumshoe/Models/ActivityModel.dart';
+import 'package:gumshoe/Screens/AboutUsScreen.dart';
+import 'package:gumshoe/Screens/ContactUsScreen.dart';
 import 'package:gumshoe/Screens/JoinedActivitiesScreen.dart';
 import 'package:gumshoe/Screens/LoginScreen.dart';
 import 'package:gumshoe/Screens/MyActivitiesScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gumshoe/Screens/TermsOfUseScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String uid, name;
@@ -310,15 +313,10 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       endDrawer: Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-            ),
-            child: Text('Drawer Header'),
-          ),
+
           ListTile(
-            title: const Text('My Activities'),
-            leading: Icon(Icons.calendar_view_month),
+            title: const Text('My Activities',textAlign: TextAlign.end,),
+            trailing: Icon(Icons.calendar_view_month),
             onTap: () {
               Navigator.pop(context);
 
@@ -330,8 +328,8 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           ListTile(
-            title: const Text('Joined Activities'),
-            leading: Icon(Icons.calendar_view_month),
+            title: const Text('Joined Activities',textAlign: TextAlign.end,),
+            trailing: Icon(Icons.calendar_view_month),
             onTap: () {
               Navigator.pop(context);
 
@@ -343,36 +341,52 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           ListTile(
-            title: const Text('Settings'),
-            leading: Icon(Icons.settings),
+            title: const Text('Settings',textAlign: TextAlign.end,),
+            trailing: Icon(Icons.settings),
             onTap: () {
               Navigator.pop(context);
             },
           ),
           ListTile(
-            title: const Text('About Us'),
-            leading: Icon(Icons.account_circle_outlined),
+            title: const Text('About Us',textAlign: TextAlign.end,),
+            trailing: Icon(Icons.account_circle_outlined),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          AboutUsScreen()));
+
             },
           ),
           ListTile(
-            title: const Text('Terms of Use'),
-            leading: Icon(Icons.add_moderator),
+            title: const Text('Terms of Use',textAlign: TextAlign.end,),
+            trailing: Icon(Icons.add_moderator),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          TermsOfUseScreen()));
             },
           ),
           ListTile(
-            title: const Text('Contact Us'),
-            leading: Icon(Icons.contact_mail),
+            title: const Text('Contact Us',textAlign: TextAlign.end,),
+            trailing: Icon(Icons.contact_mail),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ContactUsScreen()));
             },
           ),
           ListTile(
-            title: const Text('Log Out'),
-            leading: Icon(Icons.exit_to_app),
+            title: const Text('Log Out',textAlign: TextAlign.end,),
+            trailing: Icon(Icons.exit_to_app),
             onTap: () {
               showDialog(
                 context: context,
