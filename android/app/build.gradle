@@ -48,6 +48,7 @@ android {
         applicationId "com.example.gumshoe"
         minSdkVersion 20
         targetSdkVersion 31
+        multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

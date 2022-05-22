@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gumshoe/Screens/ForgotPasswordScreen.dart';
 import 'package:gumshoe/Screens/HomeScreen.dart';
 import 'package:gumshoe/Screens/SignUpScreen.dart';
@@ -123,7 +124,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                              MaterialPageRoute(
+                                  builder: (context) => ForgotPasswordScreen()),
                             );
                           },
                           child: Text(
@@ -191,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 60,
                             child: IconButton(
                               onPressed: () {
-                                //LoginWithGoogle();
+                                LoginWithGoogle();
                               },
                               icon: Image.asset("assets/images/googleicon.png"),
                             ),
@@ -254,6 +256,36 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future LoginWithGoogle() async {
+    Firebase.initializeApp();
+    final GoogleSignIn _googleSignIn = GoogleSignIn();
+    GoogleSignInAccount? account;
+    FirebaseAuth _auth = await FirebaseAuth.instance;
+    try {
+      GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+      GoogleSignInAuthentication? googleSignInAuthentication =
+          await googleSignInAccount?.authentication;
+      AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleSignInAuthentication?.accessToken,
+        idToken: googleSignInAuthentication?.idToken,
+      );
+      var authResult = await _auth.signInWithCredential(credential);
+      print(authResult.user!.email);
+    } catch (e) {
+      print('Error signing in $e');
+    }
+    // try {
+    //   await _googleSignIn.signIn();
+    //
+    //  await _googleSignIn.onCurrentUserChanged.listen((event) {
+    //     account = event;
+    //     print(account!.email);
+    //   });
+    // } catch (e) {
+    //   print('Error signing in $e');
+    // }
   }
 
   Future SignInFunc(email, password) async {
