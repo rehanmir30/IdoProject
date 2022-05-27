@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gumshoe/Models/ActivityModel.dart';
 import 'package:gumshoe/Screens/AboutUsScreen.dart';
+import 'package:gumshoe/Screens/ActivityScreen.dart';
 import 'package:gumshoe/Screens/ContactUsScreen.dart';
 import 'package:gumshoe/Screens/JoinedActivitiesScreen.dart';
 import 'package:gumshoe/Screens/LoginScreen.dart';
@@ -261,28 +262,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               return;
                                             } else if (password == pass) {
                                               joinActivity(id.toString());
-                                              // databaseReference
-                                              //     .child("Activities")
-                                              //     .child("Members")
-                                              //     .once()
-                                              //     .then((value) {
-                                              //   var i = value
-                                              //       .snapshot.children.length;
-                                              //   i++;
-                                              //   databaseReference
-                                              //       .child("Activities")
-                                              //       .child(id)
-                                              //       .child("Members")
-                                              //       .child(i.toString())
-                                              //       .set(widget.uid);
-                                              // });
-                                              // Fluttertoast.showToast(
-                                              //     msg: "Joined successfully");
-                                              // Navigator.push(
-                                              //     context,
-                                              //     MaterialPageRoute(
-                                              //         builder: (context) => ActivityScreen()));
-
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => ActivityScreen(id,widget.uid)),
+                                              );
                                               //Move to next screen from here
                                             } else {
                                               Fluttertoast.showToast(

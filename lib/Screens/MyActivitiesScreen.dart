@@ -27,7 +27,7 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
   final databaseReference =
       FirebaseDatabase.instance.reference().child("Activities");
   final databaseReference2 =
-  FirebaseDatabase.instance.reference().child("Deleted");
+      FirebaseDatabase.instance.reference().child("Deleted");
   final formKey = GlobalKey<FormState>();
   TextEditingController activityName = TextEditingController();
   TextEditingController activityPassword = TextEditingController();
@@ -61,8 +61,7 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child:
-      Scaffold(
+      child: Scaffold(
           appBar: AppBar(
             title: Text('My Activities'),
           ),
@@ -104,12 +103,12 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                           height: 170,
                           padding: new EdgeInsets.all(10.0),
                           child: GestureDetector(
-                            onTap: (){
+                            onTap: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          ActivityScreen(myActivities[index].id,widget.uid)));
+                                      builder: (context) => ActivityScreen(
+                                          myActivities[index].id, widget.uid)));
                             },
                             child: Card(
                               shape: RoundedRectangleBorder(
@@ -123,7 +122,8 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                     title: Align(
                                       alignment: Alignment.centerRight,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
                                           Text(currentItem.name,
                                               style: TextStyle(fontSize: 24.0)),
@@ -158,8 +158,8 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                                   style: TextStyle(
                                                       fontSize: 19,
                                                       color: Colors.black)),
-                                              content:
-                                                  new Text("You want to Delete."),
+                                              content: new Text(
+                                                  "You want to Delete."),
                                               actions: [
                                                 CupertinoDialogAction(
                                                     isDefaultAction: true,
@@ -175,9 +175,10 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                                               "Deleted Successfully.");
                                                       Navigator.pop(context);
                                                       myActivities
-                                                          .removeAt(index-1);
+                                                          .removeAt(index - 1);
                                                       DeleteActivity(
-                                                          myActivities[index-1]);
+                                                          myActivities[
+                                                              index - 1]);
                                                     },
                                                     child: new Text("Delete"))
                                               ],
@@ -229,13 +230,13 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                                                   'Activity id: ' +
                                                                       currentItem
                                                                           .id),
-                                                              margin:
-                                                                  EdgeInsets.only(
+                                                              margin: EdgeInsets
+                                                                  .only(
                                                                       left: 12),
                                                             ),
                                                             Container(
-                                                              margin:
-                                                                  EdgeInsets.only(
+                                                              margin: EdgeInsets
+                                                                  .only(
                                                                       top: 12),
                                                               child:
                                                                   TextFormField(
@@ -269,9 +270,8 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                                                   border:
                                                                       OutlineInputBorder(
                                                                     borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                10.0),
+                                                                        BorderRadius.circular(
+                                                                            10.0),
                                                                   ),
                                                                 ),
                                                               ),
@@ -297,7 +297,8 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                                                   currentItem
                                                                       .password,
                                                               textAlign:
-                                                                  TextAlign.right,
+                                                                  TextAlign
+                                                                      .right,
                                                               decoration:
                                                                   InputDecoration(
                                                                 labelText:
@@ -346,12 +347,10 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                                                               context,
                                                                           barrierDismissible:
                                                                               false,
-                                                                          builder:
-                                                                              (BuildContext context) =>
-                                                                                  new CupertinoAlertDialog(
-                                                                            title: new Text(
-                                                                                "Are you Sure",
-                                                                                style: TextStyle(fontSize: 19, color: Colors.black)),
+                                                                          builder: (BuildContext context) =>
+                                                                              new CupertinoAlertDialog(
+                                                                            title:
+                                                                                new Text("Are you Sure", style: TextStyle(fontSize: 19, color: Colors.black)),
                                                                             content:
                                                                                 new Text("You want to Update."),
                                                                             actions: [
@@ -419,12 +418,24 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
 
   void DeleteActivity(ActivityModel myActiviti) async {
     print(myActiviti.id);
-    
+
     await databaseReference.child(myActiviti.id).remove();
-    await databaseReference2.child(myActiviti.id).child("id").set(myActiviti.id);
-    await databaseReference2.child(myActiviti.id).child("manager").set(myActiviti.manager);
-    await databaseReference2.child(myActiviti.id).child("name").set(myActiviti.name);
-    await databaseReference2.child(myActiviti.id).child("password").set(myActiviti.password);
+    await databaseReference2
+        .child(myActiviti.id)
+        .child("id")
+        .set(myActiviti.id);
+    await databaseReference2
+        .child(myActiviti.id)
+        .child("manager")
+        .set(myActiviti.manager);
+    await databaseReference2
+        .child(myActiviti.id)
+        .child("name")
+        .set(myActiviti.name);
+    await databaseReference2
+        .child(myActiviti.id)
+        .child("password")
+        .set(myActiviti.password);
 
     return;
   }

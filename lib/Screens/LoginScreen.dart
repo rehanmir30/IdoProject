@@ -39,8 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
         desiredAccuracy: LocationAccuracy.high);
     var lastLocation = await Geolocator.getLastKnownPosition();
     print(lastLocation);
-    longi = position.longitude.toString();
-    lati = position.latitude.toString();
+    longi = position.longitude;
+    lati = position.latitude;
   }
 
   @override
@@ -259,10 +259,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future LoginWithGoogle() async {
-    Firebase.initializeApp();
+    showWidget();
+    await Firebase.initializeApp();
     final GoogleSignIn _googleSignIn = GoogleSignIn();
-    GoogleSignInAccount? account;
     FirebaseAuth _auth = await FirebaseAuth.instance;
+    String currentTime = DateTime.now().toString();
     try {
       GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
       GoogleSignInAuthentication? googleSignInAuthentication =
@@ -272,20 +273,51 @@ class _LoginScreenState extends State<LoginScreen> {
         idToken: googleSignInAuthentication?.idToken,
       );
       var authResult = await _auth.signInWithCredential(credential);
-      print(authResult.user!.email);
+      // print(authResult.user!.uid);
+      getPosition();
+      final databaseReference =
+          await FirebaseDatabase.instance.reference().child("Users");
+      await databaseReference.once().then((value) {
+        if (!value.snapshot.hasChild(authResult.user!.uid)) {
+          databaseReference
+              .child(authResult.user!.uid)
+              .child("Email")
+              .set(authResult.user!.email);
+          databaseReference
+              .child(authResult.user!.uid)
+              .child("Phone")
+              .set(authResult.user!.phoneNumber);
+          databaseReference
+              .child(authResult.user!.uid)
+              .child("Name")
+              .set(authResult.user!.displayName);
+          databaseReference
+              .child(authResult.user!.uid)
+              .child("Created at")
+              .set(currentTime);
+          databaseReference
+              .child(authResult.user!.uid)
+              .child("Longitude")
+              .set(longi);
+          databaseReference
+              .child(authResult.user!.uid)
+              .child("Latitude")
+              .set(lati);
+        }
+        hideWidget();
+        Navigator.pushAndRemoveUntil<dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => HomeScreen(
+                authResult.user!.uid, authResult.user!.displayName ?? ""),
+          ),
+          (route) => false,
+        );
+      });
     } catch (e) {
+      hideWidget();
       print('Error signing in $e');
     }
-    // try {
-    //   await _googleSignIn.signIn();
-    //
-    //  await _googleSignIn.onCurrentUserChanged.listen((event) {
-    //     account = event;
-    //     print(account!.email);
-    //   });
-    // } catch (e) {
-    //   print('Error signing in $e');
-    // }
   }
 
   Future SignInFunc(email, password) async {

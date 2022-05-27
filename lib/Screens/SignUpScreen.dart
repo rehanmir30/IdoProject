@@ -34,8 +34,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   getPosition() async {
     Position? position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    longi = position.longitude.toString();
-    lati = position.latitude.toString();
+    longi = position.longitude;
+    lati = position.latitude;
   }
 
   @override
