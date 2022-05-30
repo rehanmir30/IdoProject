@@ -46,6 +46,7 @@ dependencies:
   label_marker: ^1.0.1
   shared_preferences: ^2.0.15
   google_sign_in: ^5.3.1
+  cloud_firestore: ^3.1.17
 
 dev_dependencies:
   flutter_test:

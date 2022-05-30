@@ -27,6 +27,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late String longi, lati;
 
+  bool _isObscurePassword = false;
   final formKey = GlobalKey<FormState>();
   var id, password;
   var activityList = [];
@@ -163,132 +164,156 @@ class _HomeScreenState extends State<HomeScreen> {
           showDialog(
               context: context,
               builder: (BuildContext context) {
-                return Dialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(20.0)), //this right here
-                  child: Container(
-                    height: 230,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Form(
-                        key: formKey,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextFormField(
-                              validator: (activityId) {
-                                if (activityId!.isEmpty || activityId == null) {
-                                  return "Id required";
-                                } else {
-                                  id = activityId;
-                                  return null;
-                                }
-                              },
-                              textAlign: TextAlign.right,
-                              decoration: InputDecoration(
-                                labelText: 'Activity ID',
-                                fillColor: Colors.grey.shade100,
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            TextFormField(
-                              validator: (activityPassword) {
-                                if (activityPassword!.isEmpty ||
-                                    activityPassword == null) {
-                                  return "Password required";
-                                } else {
-                                  password = activityPassword;
-                                  return null;
-                                }
-                              },
-                              obscureText: true,
-                              textAlign: TextAlign.right,
-                              decoration: InputDecoration(
-                                labelText: 'Activity Password',
-                                fillColor: Colors.grey.shade100,
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return Dialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(20.0)), //this right here
+                      child: Container(
+                        height: 250,
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Form(
+                            key: formKey,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text('Cancel')),
-                                SizedBox(width: 10),
-                                ElevatedButton(
-                                    onPressed: () {
-                                      if (formKey.currentState != null &&
-                                          formKey.currentState!.validate()) {
-                                        activityList.clear();
-                                        DatabaseReference databaseReference =
-                                            FirebaseDatabase.instance
-                                                .reference();
-                                        databaseReference
-                                            .child("Activities")
-                                            .once()
-                                            .then((DatabaseEvent value) {
-                                          if (value.snapshot.child(id).exists) {
-                                            String pass = value.snapshot
-                                                .child(id)
-                                                .child("password")
-                                                .value
-                                                .toString();
-                                            if (widget.uid ==
-                                                value.snapshot
-                                                    .child(id)
-                                                    .child("manager")
-                                                    .value
-                                                    .toString()) {
-                                              Fluttertoast.showToast(
-                                                  msg:
-                                                      "You are the manager of this activity. Can't join as user");
-                                              return;
-                                            } else if (password == pass) {
-                                              joinActivity(id.toString());
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => ActivityScreen(id,widget.uid)),
-                                              );
-                                              //Move to next screen from here
-                                            } else {
-                                              Fluttertoast.showToast(
-                                                  msg: "Wrong Password");
-                                              return;
-                                            }
-                                          } else {
-                                            Fluttertoast.showToast(
-                                                msg: "No such activity found.");
-                                            return;
-                                          }
+                                TextFormField(
+                                  validator: (activityId) {
+                                    if (activityId!.isEmpty ||
+                                        activityId == null) {
+                                      return "Id required";
+                                    } else {
+                                      id = activityId;
+                                      return null;
+                                    }
+                                  },
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    hintText: 'Activity ID',
+                                    fillColor: Colors.grey.shade100,
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                TextFormField(
+                                  validator: (activityPassword) {
+                                    if (activityPassword!.isEmpty ||
+                                        activityPassword == null) {
+                                      return "Password required";
+                                    } else {
+                                      password = activityPassword;
+                                      return null;
+                                    }
+                                  },
+                                  obscureText: _isObscurePassword,
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: IconButton(
+                                      icon: Icon(_isObscurePassword
+                                          ? Icons.visibility
+                                          : Icons.visibility_off),
+                                      onPressed: () {
+                                        setState(() {
+                                          _isObscurePassword =
+                                              !_isObscurePassword;
                                         });
-                                      } else
-                                        return;
-                                    },
-                                    child: Text("Join"))
+                                      },
+                                    ),
+                                    hintText: 'Activity Password',
+                                    fillColor: Colors.grey.shade100,
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          if (formKey.currentState != null &&
+                                              formKey.currentState!
+                                                  .validate()) {
+                                            activityList.clear();
+                                            DatabaseReference
+                                                databaseReference =
+                                                FirebaseDatabase.instance
+                                                    .reference();
+                                            databaseReference
+                                                .child("Activities")
+                                                .once()
+                                                .then((DatabaseEvent value) {
+                                              if (value.snapshot
+                                                  .child(id)
+                                                  .exists) {
+                                                String pass = value.snapshot
+                                                    .child(id)
+                                                    .child("password")
+                                                    .value
+                                                    .toString();
+                                                if (widget.uid ==
+                                                    value.snapshot
+                                                        .child(id)
+                                                        .child("manager")
+                                                        .value
+                                                        .toString()) {
+                                                  Fluttertoast.showToast(
+                                                      msg:
+                                                          "You are the manager of this activity. Can't join as user");
+                                                  return;
+                                                } else if (password == pass) {
+                                                  joinActivity(id.toString());
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ActivityScreen(id,
+                                                                widget.uid)),
+                                                  );
+                                                  //Move to next screen from here
+                                                } else {
+                                                  Fluttertoast.showToast(
+                                                      msg: "Wrong Password");
+                                                  return;
+                                                }
+                                              } else {
+                                                Fluttertoast.showToast(
+                                                    msg:
+                                                        "No such activity found.");
+                                                return;
+                                              }
+                                            });
+                                          } else
+                                            return;
+                                        },
+                                        child: Text("Join")),
+                                    SizedBox(width: 10),
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('Cancel')),
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               });
         },
@@ -296,9 +321,11 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       endDrawer: Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
-
           ListTile(
-            title: const Text('My Activities',textAlign: TextAlign.end,),
+            title: const Text(
+              'My Activities',
+              textAlign: TextAlign.end,
+            ),
             trailing: Icon(Icons.calendar_view_month),
             onTap: () {
               Navigator.pop(context);
@@ -311,7 +338,10 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           ListTile(
-            title: const Text('Joined Activities',textAlign: TextAlign.end,),
+            title: const Text(
+              'Joined Activities',
+              textAlign: TextAlign.end,
+            ),
             trailing: Icon(Icons.calendar_view_month),
             onTap: () {
               Navigator.pop(context);
@@ -320,55 +350,60 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          JoinedActivities(widget.uid,widget.name)));
+                          JoinedActivities(widget.uid, widget.name)));
             },
           ),
           ListTile(
-            title: const Text('Settings',textAlign: TextAlign.end,),
+            title: const Text(
+              'Settings',
+              textAlign: TextAlign.end,
+            ),
             trailing: Icon(Icons.settings),
             onTap: () {
               Navigator.pop(context);
             },
           ),
           ListTile(
-            title: const Text('About Us',textAlign: TextAlign.end,),
+            title: const Text(
+              'About Us',
+              textAlign: TextAlign.end,
+            ),
             trailing: Icon(Icons.account_circle_outlined),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          AboutUsScreen()));
-
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AboutUsScreen()));
             },
           ),
           ListTile(
-            title: const Text('Terms of Use',textAlign: TextAlign.end,),
+            title: const Text(
+              'Terms of Use',
+              textAlign: TextAlign.end,
+            ),
             trailing: Icon(Icons.add_moderator),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          TermsOfUseScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => TermsOfUseScreen()));
             },
           ),
           ListTile(
-            title: const Text('Contact Us',textAlign: TextAlign.end,),
+            title: const Text(
+              'Contact Us',
+              textAlign: TextAlign.end,
+            ),
             trailing: Icon(Icons.contact_mail),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          ContactUsScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ContactUsScreen()));
             },
           ),
           ListTile(
-            title: const Text('Log Out',textAlign: TextAlign.end,),
+            title: const Text(
+              'Log Out',
+              textAlign: TextAlign.end,
+            ),
             trailing: Icon(Icons.exit_to_app),
             onTap: () {
               showDialog(
@@ -410,7 +445,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   joinActivity(String id) async {
-
     String currentTime = DateTime.now().toString();
 
     await databaseReference

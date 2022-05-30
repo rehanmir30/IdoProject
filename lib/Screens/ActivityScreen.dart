@@ -134,7 +134,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ChatScreen(widget.activityId)),
+                      builder: (context) => ChatScreen(widget.activityId,widget.userId)),
                 );
               },
               child: Icon(Icons.chat),

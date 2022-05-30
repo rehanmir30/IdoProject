@@ -21,6 +21,10 @@ class _LoginScreenState extends State<LoginScreen> {
   var Email, Password;
   var longi, lati;
   bool viewVisible = false;
+  bool emailError=false;
+  bool passwordError=false;
+  String errorMessage="";
+
 
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
@@ -63,10 +67,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: TextFormField(
                         validator: (email) {
                           if (email!.isEmpty || email == null) {
-                            return "Email required";
+                            setState(() {
+                              errorMessage="Email Required";
+                              emailError=true;
+                            });
+                            return "";
                           } else if (!emailValid.hasMatch(email)) {
-                            return "Email format is not valid";
+                            setState(() {
+                              errorMessage="Email formate not correct";
+                              emailError=true;
+                            });
+                            return "";
                           } else {
+                            setState(() {
+                              emailError=false;
+                            });
                             Email = email;
                             return null;
                           }
@@ -84,12 +99,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Container(
+                      margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                      child: Visibility(child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(errorMessage,style: TextStyle(color: Colors.red),)), visible: emailError,),
+                    ),
+                    Container(
                       margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
                       child: TextFormField(
                         validator: (password) {
                           if (password!.isEmpty || password == null) {
-                            return "Password Required";
+                            setState(() {
+                              passwordError=true;
+                            });
+                            return "";
                           } else {
+                            setState(() {
+                              passwordError=false;
+                            });
                             Password = password;
                             return null;
                           }
@@ -116,6 +143,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 10),
+                      child: Visibility(child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text("Password required",style: TextStyle(color: Colors.red),)), visible: passwordError,),
+                    ),
+
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Container(
@@ -274,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       var authResult = await _auth.signInWithCredential(credential);
       // print(authResult.user!.uid);
-      getPosition();
+      await getPosition();
       final databaseReference =
           await FirebaseDatabase.instance.reference().child("Users");
       await databaseReference.once().then((value) {

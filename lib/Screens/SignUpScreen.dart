@@ -23,6 +23,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool viewVisible = false;
   bool _isObscurePassword = true;
   bool _isObscureConPassword = true;
+
+  bool nameError = false;
+  bool emailError = false;
+  bool passwordError = false;
+  bool confirmpasswordError = false;
+  bool phonenumberError = false;
+
+  String errorMessageName = "";
+  String errorMessageEmail = "";
+  String errorMessagePassword = "";
+  String errorMessageConfirmPassword = "";
+  String errorMessagePhoneNumber = "";
+
   var emailValid = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
@@ -60,8 +73,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     child: TextFormField(
                       validator: (name) {
                         if (name!.isEmpty || name == null) {
-                          return "Please enter name";
+                          setState(() {
+                            errorMessageName = "Name Required";
+                            nameError = true;
+                          });
+                          return "";
                         } else {
+                          setState(() {
+                            nameError = false;
+                          });
                           Name = name;
                           return null;
                         }
@@ -79,14 +99,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    child: Visibility(
+                      child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            errorMessageName,
+                            style: TextStyle(color: Colors.red),
+                          )),
+                      visible: nameError,
+                    ),
+                  ),
+                  Container(
                     margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
                     child: TextFormField(
                       validator: (email) {
                         if (email!.isEmpty || email == null) {
-                          return "Enter Email";
+                          setState(() {
+                            errorMessageEmail = "Email Required";
+                            emailError = true;
+                          });
+                          return "";
                         } else if (!emailValid.hasMatch(email)) {
-                          return "Email format is not valid";
+                          setState(() {
+                            errorMessageEmail = "Email format not correct";
+                            emailError = true;
+                          });
+                          return "";
                         } else {
+                          setState(() {
+                            emailError = false;
+                          });
                           Email = email;
                           return null;
                         }
@@ -104,14 +147,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    child: Visibility(
+                      child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            errorMessageEmail,
+                            style: TextStyle(color: Colors.red),
+                          )),
+                      visible: emailError,
+                    ),
+                  ),
+                  Container(
                     margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
                     child: TextFormField(
                       validator: (password) {
                         if (password!.isEmpty || password == null) {
-                          return "Password required!";
+                          setState(() {
+                            errorMessagePassword = "Password Required";
+                            passwordError = true;
+                          });
+                          return "";
                         } else if (password.length < 6) {
-                          return "Password should be greater then 6 characters";
+                          setState(() {
+                            errorMessagePassword =
+                                "Password should be greater then 6 characters";
+                            passwordError = true;
+                          });
+                          return "";
                         } else {
+                          setState(() {
+                            passwordError = false;
+                          });
                           Password = password;
                           return null;
                         }
@@ -139,15 +206,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    child: Visibility(
+                      child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            errorMessagePassword,
+                            style: TextStyle(color: Colors.red),
+                          )),
+                      visible: passwordError,
+                    ),
+                  ),
+                  Container(
                     margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
                     child: TextFormField(
-                      validator: (c_password) {
-                        if (c_password!.isEmpty || c_password == null) {
-                          return "Enter password again";
-                        } else if (c_password != Password) {
-                          return "Passwords doesn't match";
+                      validator: (confirm_password) {
+                        if (confirm_password!.isEmpty ||
+                            confirm_password == null) {
+                          setState(() {
+                            errorMessageConfirmPassword =
+                                "Confirm Password Required";
+                            confirmpasswordError = true;
+                          });
+                          return "";
+                        } else if (confirm_password.length < 6) {
+                          setState(() {
+                            errorMessageConfirmPassword =
+                                "Password should be greater then 6 characters";
+                            confirmpasswordError = true;
+                          });
+                          return "";
+                        }else if (confirm_password!=Password) {
+                          setState(() {
+                            errorMessageConfirmPassword =
+                            "Passwords don't match";
+                            confirmpasswordError = true;
+                          });
+                          return "";
                         } else {
-                          C_Password = c_password;
+                          setState(() {
+                            confirmpasswordError = false;
+                          });
+                          C_Password = confirm_password;
                           return null;
                         }
                       },
@@ -174,12 +274,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    child: Visibility(
+                      child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            errorMessageConfirmPassword,
+                            style: TextStyle(color: Colors.red),
+                          )),
+                      visible: confirmpasswordError,
+                    ),
+                  ),
+                  Container(
                     margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
                     child: TextFormField(
                       validator: (phone_number) {
                         if (phone_number!.isEmpty || phone_number == null) {
-                          return "Enter phone number";
+                          setState(() {
+                            errorMessagePhoneNumber = "Phone Required";
+                            phonenumberError = true;
+                          });
+                          return "";
                         } else {
+                          setState(() {
+                            phonenumberError = false;
+                          });
                           Phone = phone_number;
                           return null;
                         }
@@ -194,6 +313,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    child: Visibility(
+                      child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            errorMessagePhoneNumber,
+                            style: TextStyle(color: Colors.red),
+                          )),
+                      visible: phonenumberError,
                     ),
                   ),
                   Container(
