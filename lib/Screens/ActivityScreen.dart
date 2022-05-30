@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:gumshoe/Models/IncidentsModel.dart';
 import 'package:gumshoe/Screens/ChatScreen.dart';
 import 'package:label_marker/label_marker.dart';
 
@@ -22,6 +23,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   MapType _currentMapType = MapType.normal;
   var longi, lati;
   List<String> members = [];
+  List<String> incidentsList = [];
   GoogleMapController? controller;
   final formKey = GlobalKey<FormState>();
   String IncidentName = "";
@@ -40,12 +42,30 @@ class _ActivityScreenState extends State<ActivityScreen> {
   ];
   String selectedCatagory = '';
   String selectedColor = '';
+
   @override
   void initState() {
     selectedCatagory = incidentCatagories[0];
     selectedColor = incidentColors[0];
     getPosition();
     getAllMembers();
+    getIncidents();
+  }
+
+  getIncidents() async {
+    incidentsList.clear();
+    await Firebase.initializeApp();
+    final databaseReferance = await FirebaseDatabase.instance
+        .reference()
+        .child("Activities")
+        .child(widget.activityId)
+        .child("Incidents");
+
+    await databaseReferance.once().then((value) {
+      for (var element in value.snapshot.children) {
+        incidentsList.add(element.key.toString());
+      }
+    });
   }
 
   getPosition() async {
@@ -70,13 +90,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
         members.add(element.key.toString());
       }
     });
-    // print("Membersss"+members.length.toString());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset : false,
+      resizeToAvoidBottomInset: false,
       body: GoogleMap(
         mapType: _currentMapType,
         initialCameraPosition: const CameraPosition(
@@ -146,7 +165,91 @@ class _ActivityScreenState extends State<ActivityScreen> {
         setState(() {});
       },
     );
-    setMarkerOfAllMembers();
+   await setIncidentMarkers();
+   await setMarkerOfAllMembers();
+  }
+
+  setIncidentMarkers() async {
+    await Firebase.initializeApp();
+
+    final databaseReference = await FirebaseDatabase.instance
+        .reference()
+        .child("Activities")
+        .child(widget.activityId)
+        .child("Incidents");
+
+    for (int i = 0; i < incidentsList.length; i++) {
+      var i_longi, i_lati, i_name, i_color;
+      await databaseReference
+          .child(incidentsList[i])
+          .child("Name")
+          .once()
+          .then((value) {
+        i_name = value.snapshot.value;
+      });
+      await databaseReference
+          .child(incidentsList[i])
+          .child("Latitude")
+          .once()
+          .then((value) {
+        i_lati = value.snapshot.value;
+      });
+      await databaseReference
+          .child(incidentsList[i])
+          .child("Longitude")
+          .once()
+          .then((value) {
+        i_longi = value.snapshot.value;
+      });
+      await databaseReference
+          .child(incidentsList[i])
+          .child("Color")
+          .once()
+          .then((value) {
+        i_color = value.snapshot.value;
+      });
+
+      if (i_color == "Red") {
+        markers
+            .addLabelMarker(LabelMarker(
+          label: i_name,
+          markerId: MarkerId(i_name),
+          position: LatLng(i_lati, i_longi),
+          backgroundColor: Colors.red,
+        ))
+            .then(
+          (value) {
+            setState(() {});
+          },
+        );
+      } else if (i_color == "Green") {
+        markers
+            .addLabelMarker(LabelMarker(
+          label: i_name,
+          markerId: MarkerId(i_name),
+          position: LatLng(i_lati, i_longi),
+          backgroundColor: Colors.lightGreen,
+        ))
+            .then(
+          (value) {
+            setState(() {});
+          },
+        );
+      } else if (i_color == "Yellow") {
+        markers
+            .addLabelMarker(LabelMarker(
+          label: i_name,
+          markerId: MarkerId(i_name),
+          position: LatLng(i_lati, i_longi),
+          backgroundColor: Colors.yellow,
+        ))
+            .then(
+          (value) {
+            setState(() {});
+          },
+        );
+      }
+    }
   }
 
   setMarkerOfAllMembers() async {
@@ -304,8 +407,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                     onPressed: () {
                                       if (formKey.currentState != null &&
                                           formKey.currentState!.validate()) {
-                                       markIncidentOnMaps(latlang);
-                                       Navigator.pop(context);
+                                        marknewIncidentOnMaps(latlang);
+                                        Navigator.pop(context);
                                       } else {
                                         return;
                                       }
@@ -324,43 +427,62 @@ class _ActivityScreenState extends State<ActivityScreen> {
           );
         });
   }
-  markIncidentOnMaps(LatLng latLng){
+
+  marknewIncidentOnMaps(LatLng latLng) async {
     final title = IncidentName;
 
-    if(selectedColor=="Red") {
-      markers.addLabelMarker(LabelMarker(
+    await Firebase.initializeApp();
+    final databaseReferance = await FirebaseDatabase.instance
+        .reference()
+        .child("Activities")
+        .child(widget.activityId)
+        .child("Incidents");
+
+    String? key = await databaseReferance.push().key;
+
+    await databaseReferance.child(key!).child("Name").set(IncidentName);
+    await databaseReferance.child(key).child("Longitude").set(latLng.longitude);
+    await databaseReferance.child(key).child("Latitude").set(latLng.latitude);
+    await databaseReferance.child(key).child("Marked by").set(widget.userId);
+    await databaseReferance.child(key).child("Catagory").set(selectedCatagory);
+    await databaseReferance.child(key).child("Color").set(selectedColor);
+
+    if (selectedColor == "Red") {
+      markers
+          .addLabelMarker(LabelMarker(
         label: title,
         markerId: MarkerId(title),
         position: LatLng(latLng.latitude, latLng.longitude),
         backgroundColor: Colors.red,
       ))
           .then(
-            (value) {
+        (value) {
           setState(() {});
         },
       );
-    }else if(selectedColor=="Yellow"){
-      markers.addLabelMarker(LabelMarker(
+    } else if (selectedColor == "Yellow") {
+      markers
+          .addLabelMarker(LabelMarker(
         label: title,
         markerId: MarkerId(title),
         position: LatLng(latLng.latitude, latLng.longitude),
         backgroundColor: Colors.yellow,
       ))
           .then(
-            (value) {
+        (value) {
           setState(() {});
         },
       );
-    }
-    else if(selectedColor=="Green"){
-      markers.addLabelMarker(LabelMarker(
+    } else if (selectedColor == "Green") {
+      markers
+          .addLabelMarker(LabelMarker(
         label: title,
         markerId: MarkerId(title),
         position: LatLng(latLng.latitude, latLng.longitude),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.lightGreen,
       ))
           .then(
-            (value) {
+        (value) {
           setState(() {});
         },
       );
