@@ -28,6 +28,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   final formKey = GlobalKey<FormState>();
   String IncidentName = "";
   TextEditingController incidentName = TextEditingController();
+
+
   List<String> incidentCatagories = [
     'Accident',
     'Theft',
@@ -47,12 +49,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void initState() {
     selectedCatagory = incidentCatagories[0];
     selectedColor = incidentColors[0];
+
     getPosition();
     getAllMembers();
     getIncidents();
   }
 
-  getIncidents() async {
+  Future getIncidents() async {
     incidentsList.clear();
     await Firebase.initializeApp();
     final databaseReferance = await FirebaseDatabase.instance
@@ -69,6 +72,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   getPosition() async {
+
+
     Position? position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
@@ -97,12 +102,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: GoogleMap(
+        mapToolbarEnabled: false,
         mapType: _currentMapType,
         initialCameraPosition: const CameraPosition(
           target: LatLng(0, 0),
           zoom: 1,
         ),
-        zoomControlsEnabled: true,
+        zoomControlsEnabled: false,
         markers: markers,
         onMapCreated: ((mapController) {
           setState(() {
@@ -145,7 +151,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     );
   }
 
-  makingMarkers() async {
+ Future makingMarkers() async {
     await getPosition();
 
     var newPosition = CameraPosition(target: LatLng(lati, longi), zoom: 12);
@@ -169,7 +175,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
    await setMarkerOfAllMembers();
   }
 
-  setIncidentMarkers() async {
+  Future setIncidentMarkers() async {
     await Firebase.initializeApp();
 
     final databaseReference = await FirebaseDatabase.instance
@@ -252,13 +258,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
-  setMarkerOfAllMembers() async {
+  Future setMarkerOfAllMembers() async {
     await Firebase.initializeApp();
 
     final databaseReference =
-        await FirebaseDatabase.instance.reference().child("Users");
+    await FirebaseDatabase.instance.reference().child("Users");
     for (int i = 0; i < members.length; i++) {
-      var m_longi, m_lati, m_name;
+      if (members[i] != widget.userId){
+        var m_longi, m_lati, m_name;
       await databaseReference
           .child(members[i])
           .child("Longitude")
@@ -289,15 +296,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
         backgroundColor: Colors.green,
       ))
           .then(
-        (value) {
+            (value) {
           setState(() {});
         },
       );
     }
   }
+  }
 
   void _addMarkerLongPress(LatLng latlang) {
-    // Fluttertoast.showToast(msg: latlang.toString());
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -427,7 +434,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
           );
         });
   }
-
   marknewIncidentOnMaps(LatLng latLng) async {
     final title = IncidentName;
 

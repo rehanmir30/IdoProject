@@ -19,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
         duration: 3000,
         splash: Image.asset("assets/images/logo.png"),
         splashIconSize: 500,
-        nextScreen: OnboardingScreen(),
+        nextScreen: LoginScreen(),
         splashTransition: SplashTransition.fadeTransition,
         backgroundColor: Colors.white);
 

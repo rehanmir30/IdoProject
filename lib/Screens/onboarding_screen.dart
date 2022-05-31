@@ -111,7 +111,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ? Padding(
                           padding: const EdgeInsets.all(30),
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async{
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setInt('counter', 1);
                               Navigator.pop(context);
                               Navigator.pushAndRemoveUntil<dynamic>(
                                 context,

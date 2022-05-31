@@ -8,6 +8,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gumshoe/Screens/ForgotPasswordScreen.dart';
 import 'package:gumshoe/Screens/HomeScreen.dart';
 import 'package:gumshoe/Screens/SignUpScreen.dart';
+import 'package:gumshoe/Screens/onboarding_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../External Widgets/Loading.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -36,6 +38,22 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     requestMultiplePermissions();
     getPosition();
+    checkSharedPrefs();
+  }
+  checkSharedPrefs()async{
+    final prefs = await SharedPreferences.getInstance();
+    final int? counter = prefs.getInt('counter');
+    if (counter!=1){
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  OnboardingScreen()));
+    }
+    else{
+      await prefs.setInt('counter', 1);
+      return;
+    }
   }
 
   getPosition() async {
@@ -71,13 +89,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               errorMessage="Email Required";
                               emailError=true;
                             });
-                            return "";
+                            return " ";
                           } else if (!emailValid.hasMatch(email)) {
                             setState(() {
                               errorMessage="Email formate not correct";
                               emailError=true;
                             });
-                            return "";
+                            return " ";
                           } else {
                             setState(() {
                               emailError=false;
@@ -112,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             setState(() {
                               passwordError=true;
                             });
-                            return "";
+                            return " ";
                           } else {
                             setState(() {
                               passwordError=false;

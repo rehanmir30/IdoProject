@@ -27,7 +27,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late String longi, lati;
 
-  bool _isObscurePassword = false;
+  bool _isObscurePassword = true;
   final formKey = GlobalKey<FormState>();
   var id, password;
   var activityList = [];
@@ -37,25 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final databaseReference =
       FirebaseDatabase.instance.reference().child("Activities");
-
-  // @override
-  // void initState() {
-  //
-  //   Firebase.initializeApp();
-  //   databaseReference.get().then((event) {
-  //     for (final entity in event.children) {
-  //       String name = entity.child("name").value.toString();
-  //       String manager = entity.child("manager").value.toString();
-  //       String id = entity.child("id").value.toString();
-  //       String password = entity.child("password").value.toString();
-  //       ActivityModel activitymodel = ActivityModel(
-  //           name: name, manager: manager, password: password, id: id);
-  //       allActivities.add(activitymodel);
-  //       print(allActivities.length);
-  //     }
-  //
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -93,67 +74,59 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: Alignment.topRight,
                 child: Container(
                     margin: EdgeInsets.only(top: 20, right: 12),
-                    child: Text('Activities you have Joined',
+                    child: Text('Recent Activities ',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 24))),
               ),
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                    margin: EdgeInsets.only(top: 10, right: 12),
-                    child: Text('You havent joined any activity yet')),
-              ),
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                    margin: EdgeInsets.only(top: 20, right: 12),
-                    child: Text('Activities near you',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 24))),
-              ),
-              Container(
-                margin: EdgeInsets.only(top: 10),
-                child: ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  itemCount: allActivities.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    var currentItem = allActivities[index];
-                    if (allActivities.length == 0 ||
-                        allActivities.length == null) {
-                      return Container(
-                        margin: EdgeInsets.only(top: 12),
-                        child: Text('No Activities found'),
-                      );
-                    } else
-                      return Container(
-                        width: double.infinity,
-                        height: 100,
-                        padding: new EdgeInsets.all(5.0),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          color: Colors.white,
-                          elevation: 5,
-                          child: Center(
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  leading: Icon(Icons.location_city, size: 40),
-                                  title: Text(currentItem.name,
-                                      style: TextStyle(fontSize: 20.0)),
-                                  subtitle: Text("Members : 0",
-                                      style: TextStyle(fontSize: 18.0)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                  },
-                ),
-              ),
+              // Align(
+              //   alignment: Alignment.topRight,
+              //   child: Container(
+              //       margin: EdgeInsets.only(top: 10, right: 12),
+              //       child: Text('You havent joined any activity yet')),
+              // ),
+              // Container(
+              //   margin: EdgeInsets.only(top: 10),
+              //   child: ListView.builder(
+              //     scrollDirection: Axis.vertical,
+              //     itemCount: allActivities.length,
+              //     shrinkWrap: true,
+              //     itemBuilder: (context, index) {
+              //       var currentItem = allActivities[index];
+              //       if (allActivities.length == 0 ||
+              //           allActivities.length == null) {
+              //         return Container(
+              //           margin: EdgeInsets.only(top: 12),
+              //           child: Text('No Activities found'),
+              //         );
+              //       } else
+              //         return Container(
+              //           width: double.infinity,
+              //           height: 100,
+              //           padding: new EdgeInsets.all(5.0),
+              //           child: Card(
+              //             shape: RoundedRectangleBorder(
+              //               borderRadius: BorderRadius.circular(15.0),
+              //             ),
+              //             color: Colors.white,
+              //             elevation: 5,
+              //             child: Center(
+              //               child: Column(
+              //                 children: [
+              //                   ListTile(
+              //                     leading: Icon(Icons.location_city, size: 40),
+              //                     title: Text(currentItem.name,
+              //                         style: TextStyle(fontSize: 20.0)),
+              //                     subtitle: Text("Members : 0",
+              //                         style: TextStyle(fontSize: 18.0)),
+              //                   ),
+              //                 ],
+              //               ),
+              //             ),
+              //           ),
+              //         );
+              //     },
+              //   ),
+              // ),
             ],
           ),
         ),
