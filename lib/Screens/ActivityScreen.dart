@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:gumshoe/Models/IncidentsModel.dart';
 import 'package:gumshoe/Screens/ChatScreen.dart';
 import 'package:label_marker/label_marker.dart';
+import 'package:location/location.dart';
 
 class ActivityScreen extends StatefulWidget {
   final activityId, userId;
@@ -28,7 +29,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   final formKey = GlobalKey<FormState>();
   String IncidentName = "";
   TextEditingController incidentName = TextEditingController();
-
+  Location _locationTracker = Location();
 
   List<String> incidentCatagories = [
     'Accident',
@@ -50,7 +51,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     selectedCatagory = incidentCatagories[0];
     selectedColor = incidentColors[0];
 
-    getPosition();
+    //getPosition();
     getAllMembers();
     getIncidents();
   }
@@ -71,15 +72,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
     });
   }
 
-  getPosition() async {
-
-
-    Position? position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-
-    longi = position.longitude;
-    lati = position.latitude;
-  }
+  // getPosition() async {
+  //
+  //
+  //   Position? position = await Geolocator.getCurrentPosition(
+  //       desiredAccuracy: LocationAccuracy.high);
+  //
+  //   longi = position.longitude;
+  //   lati = position.latitude;
+  // }
 
   Future getAllMembers() async {
     members.clear();
@@ -106,7 +107,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         mapType: _currentMapType,
         initialCameraPosition: const CameraPosition(
           target: LatLng(0, 0),
-          zoom: 1,
+          zoom: 14,
         ),
         zoomControlsEnabled: false,
         markers: markers,
@@ -140,7 +141,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ChatScreen(widget.activityId,widget.userId)),
+                      builder: (context) =>
+                          ChatScreen(widget.activityId, widget.userId)),
                 );
               },
               child: Icon(Icons.chat),
@@ -151,28 +153,66 @@ class _ActivityScreenState extends State<ActivityScreen> {
     );
   }
 
- Future makingMarkers() async {
-    await getPosition();
-
-    var newPosition = CameraPosition(target: LatLng(lati, longi), zoom: 12);
-    CameraUpdate update = CameraUpdate.newCameraPosition(newPosition);
-    controller?.moveCamera(update);
-
+  Future makingMarkers() async {
+    // await getPosition();
     final title = "Me";
-    markers
-        .addLabelMarker(LabelMarker(
-      label: title,
-      markerId: MarkerId(title),
-      position: LatLng(lati, longi),
-      backgroundColor: Colors.green,
-    ))
-        .then(
-      (value) {
-        setState(() {});
-      },
-    );
-   await setIncidentMarkers();
-   await setMarkerOfAllMembers();
+    var location = await _locationTracker.getLocation();
+    setState(() {
+      lati = location.latitude;
+      longi = location.longitude;
+    });
+
+    _locationTracker.onLocationChanged.listen((newLocalData) {
+      if (controller != null) {
+        lati = location.latitude;
+        longi = location.longitude;
+        setState(() {
+          lati = location.latitude;
+          longi = location.longitude;
+        });
+        controller!.animateCamera(CameraUpdate.newCameraPosition(
+            new CameraPosition(
+                target: LatLng(location.latitude!, location.longitude!),
+                zoom: 16)));
+
+        this.setState(() {
+          markers
+              .addLabelMarker(LabelMarker(
+            label: title,
+            markerId: MarkerId(title),
+            position: LatLng(location.latitude!, location.longitude!),
+            backgroundColor: Colors.green,
+          ))
+              .then(
+            (value) {
+              setState(() {});
+            },
+          );
+        });
+
+        print("new Longitude " + lati.toString());
+      } else {
+        Fluttertoast.showToast(msg: "Controller is null");
+      }
+    });
+    // var newPosition = CameraPosition(target: LatLng(lati, longi), zoom: 12);
+    // CameraUpdate update = CameraUpdate.newCameraPosition(newPosition);
+    // controller?.moveCamera(update);
+    //
+    // markers
+    //     .addLabelMarker(LabelMarker(
+    //   label: title,
+    //   markerId: MarkerId(title),
+    //   position: LatLng(lati, longi),
+    //   backgroundColor: Colors.green,
+    // ))
+    //     .then(
+    //   (value) {
+    //     setState(() {});
+    //   },
+    // );
+    await setIncidentMarkers();
+    await setMarkerOfAllMembers();
   }
 
   Future setIncidentMarkers() async {
@@ -262,46 +302,46 @@ class _ActivityScreenState extends State<ActivityScreen> {
     await Firebase.initializeApp();
 
     final databaseReference =
-    await FirebaseDatabase.instance.reference().child("Users");
+        await FirebaseDatabase.instance.reference().child("Users");
     for (int i = 0; i < members.length; i++) {
-      if (members[i] != widget.userId){
+      if (members[i] != widget.userId) {
         var m_longi, m_lati, m_name;
-      await databaseReference
-          .child(members[i])
-          .child("Longitude")
-          .once()
-          .then((value) {
-        m_longi = value.snapshot.value;
-      });
-      await databaseReference
-          .child(members[i])
-          .child("Latitude")
-          .once()
-          .then((value) {
-        m_lati = value.snapshot.value;
-      });
-      await databaseReference
-          .child(members[i])
-          .child("Name")
-          .once()
-          .then((value) {
-        m_name = value.snapshot.value;
-      });
-      final title = m_name;
-      markers
-          .addLabelMarker(LabelMarker(
-        label: title,
-        markerId: MarkerId(title),
-        position: LatLng(m_lati, m_longi),
-        backgroundColor: Colors.green,
-      ))
-          .then(
-            (value) {
-          setState(() {});
-        },
-      );
+        await databaseReference
+            .child(members[i])
+            .child("Longitude")
+            .once()
+            .then((value) {
+          m_longi = value.snapshot.value;
+        });
+        await databaseReference
+            .child(members[i])
+            .child("Latitude")
+            .once()
+            .then((value) {
+          m_lati = value.snapshot.value;
+        });
+        await databaseReference
+            .child(members[i])
+            .child("Name")
+            .once()
+            .then((value) {
+          m_name = value.snapshot.value;
+        });
+        final title = m_name;
+        markers
+            .addLabelMarker(LabelMarker(
+          label: title,
+          markerId: MarkerId(title),
+          position: LatLng(m_lati, m_longi),
+          backgroundColor: Colors.green,
+        ))
+            .then(
+          (value) {
+            setState(() {});
+          },
+        );
+      }
     }
-  }
   }
 
   void _addMarkerLongPress(LatLng latlang) {
@@ -323,10 +363,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Add a marker!",
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "Add a marker!",
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
                           ),
                           Container(
                             margin: EdgeInsets.only(top: 5),
@@ -342,7 +385,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               },
                               textAlign: TextAlign.right,
                               decoration: InputDecoration(
-                                labelText: 'Name',
+                                hintText: 'Name',
                                 fillColor: Colors.grey.shade100,
                                 filled: true,
                                 border: OutlineInputBorder(
@@ -355,8 +398,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             margin: EdgeInsets.only(top: 10),
                             child: DropdownButtonFormField(
                               elevation: 8,
+                              isExpanded: true,
+                              iconSize: 0.0,
                               hint: Text('Select Catagory'),
                               decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.arrow_drop_down),
                                   enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: BorderSide(
@@ -364,7 +410,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               items: incidentCatagories.map((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
-                                  child: Text(value),
+                                  child: Container(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(value)),
                                 );
                               }).toList(),
                               value: incidentCatagories[0],
@@ -379,8 +427,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             margin: EdgeInsets.only(top: 5),
                             child: DropdownButtonFormField(
                               elevation: 8,
+                              iconSize: 0.0,
+                              isExpanded: true,
                               hint: Text('Select Color'),
                               decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.arrow_drop_down),
                                   enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: BorderSide(
@@ -388,7 +439,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               items: incidentColors.map((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
-                                  child: Text(value),
+                                  child: Container(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(value)),
                                 );
                               }).toList(),
                               value: incidentColors[0],
@@ -402,13 +455,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           Container(
                             margin: EdgeInsets.only(top: 10),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text('Cancel')),
                                 SizedBox(width: 10),
                                 ElevatedButton(
                                     onPressed: () {
@@ -420,7 +468,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                         return;
                                       }
                                     },
-                                    child: Text("Add Marker"))
+                                    child: Text("Add Marker")),
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('Cancel'))
                               ],
                             ),
                           )
@@ -434,6 +487,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           );
         });
   }
+
   marknewIncidentOnMaps(LatLng latLng) async {
     final title = IncidentName;
 
