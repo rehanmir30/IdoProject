@@ -10,6 +10,7 @@ import 'package:gumshoe/Models/ActivityModel.dart';
 import 'package:gumshoe/Screens/ActivityScreen.dart';
 import 'package:gumshoe/Screens/CreateActivityScreen.dart';
 import 'package:gumshoe/Screens/EditActivityScreen.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 class MyActivitiesScreen extends StatefulWidget {
@@ -25,6 +26,8 @@ class MyActivitiesScreen extends StatefulWidget {
 class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
   List<ActivityModel> allActivities = [];
   List<ActivityModel> myActivities = [];
+  List<int> NumberOfMembers = [];
+
   final databaseReference =
       FirebaseDatabase.instance.reference().child("Activities");
   final databaseReference2 =
@@ -57,6 +60,26 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
       print("all activities length: " + allActivities.length.toString());
       myActivities = getMyActivities(allActivities);
     });
+    await getMembersLength();
+  }
+  getMembersLength() async{
+    int count = 0;
+    NumberOfMembers.clear();
+    for(int i = 0; i<myActivities.length; i++)
+    {
+      final datareference = await FirebaseDatabase.instance.reference().child("Activities").child(myActivities[i].id).once().then((value){
+
+        if(value.snapshot.child("Members").exists)
+        {
+          count = value.snapshot.child("Members").children.length;
+          NumberOfMembers.add(count);
+        }
+        else{
+          NumberOfMembers.add(0);
+        }
+      });
+    }
+
   }
 
   @override
@@ -139,7 +162,7 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                       margin: EdgeInsets.only(right: 20),
                                       child: Align(
                                         alignment: Alignment.centerRight,
-                                        child: Text("Members : 0",
+                                        child: Text("Members : "+NumberOfMembers[index].toString()??"0",
                                             style: TextStyle(fontSize: 15.0)),
                                       ),
                                     ),
@@ -192,8 +215,8 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                         onPressed: () {
                                           Share.share("Activity Created By: " +
                                               widget.userName +
-                                              "\n\nActivity Name: " +
-                                              currentItem.name +
+                                              "\n\nActivity ID: " +
+                                              currentItem.id +
                                               "\nActivity pass: " +
                                               currentItem.password);
                                         },
@@ -201,12 +224,42 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
                                       IconButton(
                                         icon: Icon(Icons.edit),
                                         onPressed: () {
-
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(builder: (context) => EditActivityScreen(currentItem.id,currentItem.name,currentItem.password)),
                                           );
                                         },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.qr_code_scanner), onPressed: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return StatefulBuilder(
+                                                builder: (BuildContext context, StateSetter setState) {
+                                                  return Dialog(
+                                                    shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                        BorderRadius.circular(20.0)), //this right here
+                                                    child: Container(
+                                                      height: 300,
+                                                      width: 300,
+                                                      child: Align(
+                                                        alignment: Alignment.center,
+                                                        child: QrImage(
+                                                          data: currentItem.id,
+                                                          version: QrVersions.auto,
+                                                          size: 200.0,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            });
+
+
+                                      },
                                       ),
                                     ],
                                   ),
@@ -223,7 +276,7 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
   }
 
   getMyActivities(List<ActivityModel> allActivities) {
-    List<ActivityModel> myActivities = [];
+   // List<ActivityModel> myActivities = [];
     myActivities.clear();
     for (var activity in allActivities) {
       if (activity.manager == widget.uid) {

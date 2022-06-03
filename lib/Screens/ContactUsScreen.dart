@@ -15,6 +15,15 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   var emailValid = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
   var Email, Subject,Message;
+
+  bool emailError = false;
+  bool subjectError = false;
+  bool messageError = false;
+
+  String errorMessageEmail = "";
+  String errorMessageSubject = "";
+  String errorMessage = "";
+
   TextEditingController email = TextEditingController();
   TextEditingController subject = TextEditingController();
   TextEditingController message = TextEditingController();
@@ -82,6 +91,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 ),
               ),
               Container(
+                padding: EdgeInsets.all(10),
                 width: double.infinity,
                 height: 300,
                 margin: EdgeInsets.only(left: 15, right: 15, top: 15),
@@ -103,13 +113,25 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             child: TextFormField(
                               validator: (email) {
                                 if (email!.isEmpty || email == null) {
-                                  return "Email required";
+                                  setState(() {
+                                    errorMessageEmail = "Email Required";
+                                    emailError = true;
+                                  });
+                                  return "";
                                 } else if (!emailValid.hasMatch(email)) {
-                                  return "Email format is not valid";
+                                  setState(() {
+                                    errorMessageEmail = "Email format not correct";
+                                    emailError = true;
+                                  });
+                                  return "";
                                 } else {
+                                  setState(() {
+                                    emailError = false;
+                                  });
                                   Email = email;
                                   return null;
                                 }
+
                               },
                               keyboardType: TextInputType.emailAddress,
                               textAlign: TextAlign.right,
@@ -123,13 +145,34 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                               ),
                             ),
                           ),
+                          //Error Container
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                            child: Visibility(
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    errorMessageEmail,
+                                    style: TextStyle(color: Colors.red),
+                                  )),
+                              visible: emailError,
+                            ),
+                          ),
+
                           Container(
                             margin: EdgeInsets.only(top: 10,left: 10,right: 10),
                             child: TextFormField(
                               validator: (subject) {
                                 if (subject!.isEmpty || subject == null) {
-                                  return "Subject required";
-                                }  else {
+                                  setState(() {
+                                    errorMessageSubject = "Subject required";
+                                    subjectError = true;
+                                  });
+                                  return "";
+                                }else {
+                                  setState(() {
+                                    subjectError = false;
+                                  });
                                   Subject = subject;
                                   return null;
                                 }
@@ -146,13 +189,33 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                               ),
                             ),
                           ),
+                          //Error Container
                           Container(
-                            margin: EdgeInsets.only(top: 10,left: 10,right: 10,bottom: 20),
+                            margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                            child: Visibility(
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    errorMessageSubject,
+                                    style: TextStyle(color: Colors.red),
+                                  )),
+                              visible: subjectError,
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.only(top: 10,left: 10,right: 10),
                             child: TextFormField(
                               validator: (message) {
                                 if (message!.isEmpty || message == null) {
-                                  return "Message required";
-                                }  else {
+                                  setState(() {
+                                    errorMessage = "Message required";
+                                    messageError = true;
+                                  });
+                                  return "";
+                                }else {
+                                  setState(() {
+                                    messageError = false;
+                                  });
                                   Message = message;
                                   return null;
                                 }
@@ -168,7 +231,20 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                                 ),
                               ),
                             ),
-                          )
+                          ),
+                          //Error Container
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 5, 15),
+                            child: Visibility(
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    errorMessage,
+                                    style: TextStyle(color: Colors.red),
+                                  )),
+                              visible: messageError,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -189,7 +265,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                         onPressed: () {
                           if (formKey.currentState != null &&
                               formKey.currentState!.validate()) {
-                          //  SignInFunc(Email, Password);
+                            //  SignInFunc(Email, Password);
                           }
                         },
                         child: Row(

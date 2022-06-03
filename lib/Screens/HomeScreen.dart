@@ -15,6 +15,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gumshoe/Screens/TermsOfUseScreen.dart';
 
+import 'ScanScreen.dart';
+
 class HomeScreen extends StatefulWidget {
   final String uid, name;
 
@@ -27,10 +29,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late String longi, lati;
 
+  bool ActivityIdDialogError = false;
+  bool PasswordDialogError = false;
   bool _isObscurePassword = true;
+
+  String errorMessageActivityId = "";
+  String errorMessageActivityPassword = "";
+
+
   final formKey = GlobalKey<FormState>();
   var id, password;
   var activityList = [];
+
   List<ActivityModel> allActivities = [];
   TextEditingController activityId = TextEditingController();
   TextEditingController activityPassword = TextEditingController();
@@ -78,55 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 24))),
               ),
-              // Align(
-              //   alignment: Alignment.topRight,
-              //   child: Container(
-              //       margin: EdgeInsets.only(top: 10, right: 12),
-              //       child: Text('You havent joined any activity yet')),
-              // ),
-              // Container(
-              //   margin: EdgeInsets.only(top: 10),
-              //   child: ListView.builder(
-              //     scrollDirection: Axis.vertical,
-              //     itemCount: allActivities.length,
-              //     shrinkWrap: true,
-              //     itemBuilder: (context, index) {
-              //       var currentItem = allActivities[index];
-              //       if (allActivities.length == 0 ||
-              //           allActivities.length == null) {
-              //         return Container(
-              //           margin: EdgeInsets.only(top: 12),
-              //           child: Text('No Activities found'),
-              //         );
-              //       } else
-              //         return Container(
-              //           width: double.infinity,
-              //           height: 100,
-              //           padding: new EdgeInsets.all(5.0),
-              //           child: Card(
-              //             shape: RoundedRectangleBorder(
-              //               borderRadius: BorderRadius.circular(15.0),
-              //             ),
-              //             color: Colors.white,
-              //             elevation: 5,
-              //             child: Center(
-              //               child: Column(
-              //                 children: [
-              //                   ListTile(
-              //                     leading: Icon(Icons.location_city, size: 40),
-              //                     title: Text(currentItem.name,
-              //                         style: TextStyle(fontSize: 20.0)),
-              //                     subtitle: Text("Members : 0",
-              //                         style: TextStyle(fontSize: 18.0)),
-              //                   ),
-              //                 ],
-              //               ),
-              //             ),
-              //           ),
-              //         );
-              //     },
-              //   ),
-              // ),
+
             ],
           ),
         ),
@@ -134,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         label: const Text('Join an Activity'),
         onPressed: () {
+          ActivityIdDialogError = false;
+          PasswordDialogError = false;
           showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -144,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius:
                               BorderRadius.circular(20.0)), //this right here
                       child: Container(
-                        height: 250,
+                        height: 300,
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Form(
@@ -155,11 +119,26 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 TextFormField(
                                   validator: (activityId) {
-                                    if (activityId!.isEmpty ||
-                                        activityId == null) {
-                                      return "Id required";
+
+                                    // if (activityId!.isEmpty ||
+                                    //     activityId == null) {
+                                    //   return "Id required";
+                                    // } else {
+                                    //   id = activityId;
+                                    //   return null;
+                                    // }
+
+                                    if (activityId!.isEmpty || activityId == null) {
+                                      setState(() {
+                                        errorMessageActivityId = "ID Required";
+                                        ActivityIdDialogError = true;
+                                      });
+                                      return " ";
                                     } else {
-                                      id = activityId;
+                                      setState(() {
+                                        ActivityIdDialogError = false;
+                                        id = activityId;
+                                      });
                                       return null;
                                     }
                                   },
@@ -173,16 +152,45 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                 ),
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                  child: Visibility(
+                                    child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          errorMessageActivityId,
+                                          style: TextStyle(color: Colors.red),
+                                        )),
+                                    visible: ActivityIdDialogError,
+                                  ),
+                                ),
+
                                 SizedBox(
                                   height: 10,
                                 ),
                                 TextFormField(
                                   validator: (activityPassword) {
+
+                                    // if (activityPassword!.isEmpty ||
+                                    //     activityPassword == null) {
+                                    //   return "Password required";
+                                    // } else {
+                                    //   password = activityPassword;
+                                    //   return null;
+                                    // }
+
                                     if (activityPassword!.isEmpty ||
                                         activityPassword == null) {
-                                      return "Password required";
-                                    } else {
-                                      password = activityPassword;
+                                      setState(() {
+                                        errorMessageActivityPassword = "Password Required";
+                                        PasswordDialogError = true;
+                                      });
+                                      return "";
+                                    }else {
+                                      setState(() {
+                                        PasswordDialogError = false;
+                                        password = activityPassword;
+                                      });
                                       return null;
                                     }
                                   },
@@ -196,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       onPressed: () {
                                         setState(() {
                                           _isObscurePassword =
-                                              !_isObscurePassword;
+                                          !_isObscurePassword;
                                         });
                                       },
                                     ),
@@ -206,6 +214,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
                                     ),
+                                  ),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                  child: Visibility(
+                                    child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          errorMessageActivityPassword,
+                                          style: TextStyle(color: Colors.red),
+                                        )),
+                                    visible: PasswordDialogError,
                                   ),
                                 ),
                                 SizedBox(
@@ -255,6 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             ActivityScreen(id,
                                                                 widget.uid)),
                                                   );
+
                                                   //Move to next screen from here
                                                 } else {
                                                   Fluttertoast.showToast(
@@ -278,6 +299,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                           Navigator.pop(context);
                                         },
                                         child: Text('Cancel')),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: IconButton(
+                                          icon: Icon(Icons.qr_code_scanner), onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ScanScreen(widget.uid)),
+                                          );
+                                        },
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
