@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 
@@ -10,6 +11,7 @@ import 'package:gumshoe/Models/ActivityModel.dart';
 import 'package:gumshoe/Screens/ActivityScreen.dart';
 import 'package:gumshoe/Screens/CreateActivityScreen.dart';
 import 'package:gumshoe/Screens/EditActivityScreen.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -28,26 +30,33 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
   List<ActivityModel> myActivities = [];
   List<int> NumberOfMembers = [];
 
+  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey = GlobalKey<LiquidPullToRefreshState>();
+
+
   final databaseReference =
       FirebaseDatabase.instance.reference().child("Activities");
   final databaseReference2 =
       FirebaseDatabase.instance.reference().child("Deleted");
+  final test = FirebaseDatabase.instance.reference().child("Activities");
   final formKey = GlobalKey<FormState>();
   TextEditingController activityName = TextEditingController();
   TextEditingController activityPassword = TextEditingController();
   late String name, password;
 
+   Future _handleRefresh()async {
+    await getAllActivities();
+  }
+
   @override
   void initState() {
     getAllActivities();
+    super.initState();
   }
 
   Future getAllActivities() async {
-    final databaseReference =
-        await FirebaseDatabase.instance.reference().child("Activities");
-    await databaseReference.get().then((event) {
+    await test.once().then((event) {
       allActivities.clear();
-      for (final entity in event.children) {
+      for (final entity in event.snapshot.children) {
         String name = entity.child("name").value.toString();
         String manager = entity.child("manager").value.toString();
         String id = entity.child("id").value.toString();
@@ -62,25 +71,23 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
     });
     await getMembersLength();
   }
-  getMembersLength() async{
+
+  getMembersLength() async {
     int count = 0;
     NumberOfMembers.clear();
-    for(int i = 0; i<myActivities.length; i++)
-    {
-      final datareference = await FirebaseDatabase.instance.reference().child("Activities").child(myActivities[i].id).once().then((value){
-
-        if(value.snapshot.child("Members").exists)
-        {
+    for (int i = 0; i < myActivities.length; i++) {
+     await test.child(myActivities[i].id).once().then((value) {
+        if (value.snapshot.child("Members").exists) {
           count = value.snapshot.child("Members").children.length;
           NumberOfMembers.add(count);
-        }
-        else{
+        } else {
           NumberOfMembers.add(0);
         }
       });
     }
 
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -91,192 +98,213 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
           ),
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => CreateActivityScreen(widget.uid)));
+
             },
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-          body: FutureBuilder(
-              future: getAllActivities(),
-              builder: (context, projectSnap) {
-                if (projectSnap.connectionState == ConnectionState.none &&
-                    projectSnap.hasData == null) {
-                  //print('project snapshot data is: ${projectSnap.data}');
-                  return Container(
-                    margin: EdgeInsets.only(top: 12),
-                    child: Text('You have no active activities'),
-                  );
-                } else {
-                  return ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: myActivities.length,
-                    itemBuilder: (context, index) {
-                      var currentItem = myActivities[index];
-                      if (myActivities.length < 1 ||
-                          myActivities.length == null) {
-                        return Container(
-                          margin: EdgeInsets.only(top: 12),
-                          child: Text('You have no active activities'),
-                        );
-                      } else
-                        return Container(
-                          width: double.infinity,
-                          height: 170,
-                          padding: new EdgeInsets.all(10.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ActivityScreen(
-                                          myActivities[index].id, widget.uid)));
-                            },
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                              color: Colors.white,
-                              elevation: 10,
-                              child: Column(
-                                children: [
-                                  ListTile(
-                                    title: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Text(currentItem.name,
-                                              style: TextStyle(fontSize: 24.0)),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Icon(Icons.location_city, size: 40),
-                                        ],
-                                      ),
-                                    ),
-                                    subtitle: Container(
-                                      margin: EdgeInsets.only(right: 20),
-                                      child: Align(
+          body: LiquidPullToRefresh(
+            onRefresh: _handleRefresh,
+            child: FutureBuilder(
+                future: getAllActivities(),
+                builder: (context, projectSnap) {
+                  if (projectSnap.connectionState == ConnectionState.none &&
+                      projectSnap.hasData == null) {
+                    //print('project snapshot data is: ${projectSnap.data}');
+                    return Container(
+                      margin: EdgeInsets.only(top: 12),
+                      child: Text('You have no active activities'),
+                    );
+                  } else {
+                    return ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: myActivities.length,
+                      itemBuilder: (context, index) {
+                        var currentItem = myActivities[index];
+                        if (myActivities.length < 1 ||
+                            myActivities.length == null) {
+                          return Container(
+                            margin: EdgeInsets.only(top: 12),
+                            child: Text('You have no active activities'),
+                          );
+                        } else
+                          return Container(
+                            width: double.infinity,
+                            height: 170,
+                            padding: new EdgeInsets.all(10.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ActivityScreen(
+                                            myActivities[index].id, widget.uid)));
+                              },
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                ),
+                                color: Colors.white,
+                                elevation: 10,
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      title: Align(
                                         alignment: Alignment.centerRight,
-                                        child: Text("Members : "+NumberOfMembers[index].toString()??"0",
-                                            style: TextStyle(fontSize: 15.0)),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Text(currentItem.name,
+                                                style: TextStyle(fontSize: 24.0)),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Icon(Icons.location_city, size: 40),
+                                          ],
+                                        ),
+                                      ),
+                                      subtitle: Container(
+                                        margin: EdgeInsets.only(right: 20),
+                                        child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Text(
+                                              "Members : " +
+                                                      NumberOfMembers[index]
+                                                          .toString() ??
+                                                  "0",
+                                              style: TextStyle(fontSize: 15.0)),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  ButtonBar(
-                                    alignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      IconButton(
-                                        icon: Icon(Icons.delete),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (BuildContext context) =>
-                                                new CupertinoAlertDialog(
-                                              title: new Text("Are you Sure",
-                                                  style: TextStyle(
-                                                      fontSize: 19,
-                                                      color: Colors.black)),
-                                              content: new Text(
-                                                  "You want to Delete."),
-                                              actions: [
-                                                CupertinoDialogAction(
-                                                    isDefaultAction: true,
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: new Text("Close")),
-                                                CupertinoDialogAction(
-                                                    isDefaultAction: true,
-                                                    onPressed: () {
-                                                      Fluttertoast.showToast(
-                                                          msg:
-                                                              "Deleted Successfully.");
-                                                      Navigator.pop(context);
-                                                      myActivities
-                                                          .removeAt(index - 1);
-                                                      DeleteActivity(
-                                                          myActivities[
-                                                              index - 1]);
-                                                    },
-                                                    child: new Text("Delete"))
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.share),
-                                        onPressed: () {
-                                          Share.share("Activity Created By: " +
-                                              widget.userName +
-                                              "\n\nActivity ID: " +
-                                              currentItem.id +
-                                              "\nActivity pass: " +
-                                              currentItem.password);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.edit),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => EditActivityScreen(currentItem.id,currentItem.name,currentItem.password)),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.qr_code_scanner), onPressed: () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return StatefulBuilder(
-                                                builder: (BuildContext context, StateSetter setState) {
-                                                  return Dialog(
-                                                    shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                        BorderRadius.circular(20.0)), //this right here
-                                                    child: Container(
-                                                      height: 300,
-                                                      width: 300,
-                                                      child: Align(
-                                                        alignment: Alignment.center,
-                                                        child: QrImage(
-                                                          data: currentItem.id,
-                                                          version: QrVersions.auto,
-                                                          size: 200.0,
+                                    ButtonBar(
+                                      alignment: MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        IconButton(
+                                          icon: Icon(Icons.delete),
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: false,
+                                              builder: (BuildContext context) =>
+                                                  new CupertinoAlertDialog(
+                                                title: new Text("Are you Sure",
+                                                    style: TextStyle(
+                                                        fontSize: 19,
+                                                        color: Colors.black)),
+                                                content: new Text(
+                                                    "You want to Delete."),
+                                                actions: [
+                                                  CupertinoDialogAction(
+                                                      isDefaultAction: true,
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: new Text("Close")),
+                                                  CupertinoDialogAction(
+                                                      isDefaultAction: true,
+                                                      onPressed: () {
+                                                        Fluttertoast.showToast(
+                                                            msg:
+                                                                "Deleted Successfully.");
+                                                        Navigator.pop(context);
+                                                        myActivities
+                                                            .removeAt(index - 1);
+                                                        DeleteActivity(
+                                                            myActivities[
+                                                                index - 1]);
+                                                      },
+                                                      child: new Text("Delete"))
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.share),
+                                          onPressed: () {
+                                            Share.share("Activity Created By: " +
+                                                widget.userName +
+                                                "\n\nActivity ID: " +
+                                                currentItem.id +
+                                                "\nActivity pass: " +
+                                                currentItem.password);
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.edit),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditActivityScreen(
+                                                          currentItem.id,
+                                                          currentItem.name,
+                                                          currentItem.password)),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.qr_code_scanner),
+                                          onPressed: () {
+                                            showDialog(
+                                                context: context,
+                                                builder: (BuildContext context) {
+                                                  return StatefulBuilder(
+                                                    builder: (BuildContext
+                                                            context,
+                                                        StateSetter setState) {
+                                                      return Dialog(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            20.0)),
+                                                        //this right here
+                                                        child: Container(
+                                                          height: 300,
+                                                          width: 300,
+                                                          child: Align(
+                                                            alignment:
+                                                                Alignment.center,
+                                                            child: QrImage(
+                                                              data:
+                                                                  currentItem.id,
+                                                              version:
+                                                                  QrVersions.auto,
+                                                              size: 200.0,
+                                                            ),
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ),
+                                                      );
+                                                    },
                                                   );
-                                                },
-                                              );
-                                            });
-
-
-                                      },
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                                });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                    },
-                  );
-                }
-              })),
+                          );
+                      },
+                    );
+                  }
+                }),
+          )),
     );
   }
 
   getMyActivities(List<ActivityModel> allActivities) {
-   // List<ActivityModel> myActivities = [];
+    // List<ActivityModel> myActivities = [];
     myActivities.clear();
     for (var activity in allActivities) {
       if (activity.manager == widget.uid) {

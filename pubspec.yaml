@@ -50,6 +50,7 @@ dependencies:
   location:
   qr_code_scanner:
   qr_flutter: ^4.0.0
+  liquid_pull_to_refresh: ^3.0.1
 
 dev_dependencies:
   flutter_test:

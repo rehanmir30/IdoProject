@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gumshoe/Models/ActivityModel.dart';
+import 'package:gumshoe/Models/LastOpenedModel.dart';
 import 'package:gumshoe/Screens/AboutUsScreen.dart';
 import 'package:gumshoe/Screens/ActivityScreen.dart';
 import 'package:gumshoe/Screens/ContactUsScreen.dart';
@@ -40,6 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final formKey = GlobalKey<FormState>();
   var id, password;
   var activityList = [];
+  List<String> ActivtiyId = [];
+  List<String> MatchedActivtiyId = [];
+  List<LastOpenedModel> LastTime = [];
 
   List<ActivityModel> allActivities = [];
   TextEditingController activityId = TextEditingController();
@@ -47,6 +51,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final databaseReference =
       FirebaseDatabase.instance.reference().child("Activities");
+
+  Future getAllActivities() async {
+    final databaseReference =
+    await FirebaseDatabase.instance.reference().child("Activities");
+    await databaseReference.once().then((value){
+      allActivities.clear();
+      ActivtiyId.clear();
+      MatchedActivtiyId.clear();
+      for(var id in value.snapshot.children)
+      {
+        ActivtiyId.add(id.key.toString());
+      }
+    });
+    print(ActivtiyId.length);
+
+    LastTime.clear();
+    for(int i = 0; i<ActivtiyId.length; i++)
+    {
+      await databaseReference.child(ActivtiyId[i]).once().then((value){
+
+        if(value.snapshot.child("Members").exists)
+        {
+          for(var mem in value.snapshot.child("Members").children)
+          {
+            String LastOpened,ActId;
+            if(widget.uid == mem.key.toString())
+            {
+              ActId = ActivtiyId[i];
+              LastOpened = mem.child("Last Opened").value.toString();
+              // MatchedActivtiyId.add(ActivtiyId[i]);
+              // LastTime.add(mem.child("Last Opened").value.toString());
+
+              LastOpenedModel lo = LastOpenedModel(LastOpened: LastOpened,id: ActId);
+              LastTime.add(lo);
+
+            }
+          }
+        }
+      });
+    }
+    print("Length of lo "+LastTime.length.toString());
+  }
+
+  @override
+  void initState() {
+    getAllActivities();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +139,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 24))),
               ),
-
             ],
           ),
         ),
@@ -119,15 +169,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 TextFormField(
                                   validator: (activityId) {
-
-                                    // if (activityId!.isEmpty ||
-                                    //     activityId == null) {
-                                    //   return "Id required";
-                                    // } else {
-                                    //   id = activityId;
-                                    //   return null;
-                                    // }
-
                                     if (activityId!.isEmpty || activityId == null) {
                                       setState(() {
                                         errorMessageActivityId = "ID Required";
@@ -170,14 +211,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 TextFormField(
                                   validator: (activityPassword) {
-
-                                    // if (activityPassword!.isEmpty ||
-                                    //     activityPassword == null) {
-                                    //   return "Password required";
-                                    // } else {
-                                    //   password = activityPassword;
-                                    //   return null;
-                                    // }
 
                                     if (activityPassword!.isEmpty ||
                                         activityPassword == null) {

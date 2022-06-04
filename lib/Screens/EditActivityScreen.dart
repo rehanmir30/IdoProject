@@ -83,6 +83,10 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                     child: Column(
                       children: [
                         Container(
+                          margin: EdgeInsets.fromLTRB(0, 10, 15, 0),
+                          child: Align(alignment:Alignment.centerRight,child: Text("Activity ID: "+ widget.activityId,style: TextStyle(fontWeight: FontWeight.bold),)),
+                        ),
+                        Container(
                           margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
                           child: TextFormField(
                             validator: (nameController) {

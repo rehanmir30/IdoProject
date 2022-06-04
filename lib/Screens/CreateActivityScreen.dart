@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gumshoe/Models/ActivityModel.dart';
 
 class CreateActivityScreen extends StatefulWidget {
   final String uid;
@@ -258,7 +259,7 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
       'manager': widget.uid,
       'id': rNum
     }).asStream();
-
+// ActivityModel activityModel=ActivityModel(name: activityName, manager: widget.uid, password: activityPassword, id: rNum.toString());
     Fluttertoast.showToast(
         msg: "Activity created successfully",
         toastLength: Toast.LENGTH_LONG,
