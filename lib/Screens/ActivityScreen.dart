@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,6 +11,7 @@ import 'package:gumshoe/Models/IncidentsModel.dart';
 import 'package:gumshoe/Screens/ChatScreen.dart';
 import 'package:label_marker/label_marker.dart';
 import 'package:location/location.dart';
+import 'dart:ui' as ui;
 
 class ActivityScreen extends StatefulWidget {
   final activityId, userId;
@@ -31,13 +35,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   TextEditingController incidentName = TextEditingController();
   Location _locationTracker = Location();
 
-  List<String> incidentCatagories = [
-    'Accident',
-    'Theft',
-    'Earthquake',
-    'Flood',
-    'Shopping'
-  ];
+  List<String> incidentCatagories = ['Man', 'Danger', 'General'];
   List<String> incidentColors = [
     'Red',
     'Yellow',
@@ -173,7 +171,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         controller!.animateCamera(CameraUpdate.newCameraPosition(
             new CameraPosition(
                 target: LatLng(location.latitude!, location.longitude!),
-                zoom: 16)));
+                zoom: 14)));
 
         this.setState(() {
           markers
@@ -488,8 +486,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
         });
   }
 
+  Future<Uint8List> getMarker(String path) async {
+    ByteData byteData = await DefaultAssetBundle.of(context).load(path);
+    return byteData.buffer.asUint8List();
+  }
+
   marknewIncidentOnMaps(LatLng latLng) async {
     final title = IncidentName;
+
+    Uint8List personData = await getMarker("assets/images/person.png");
 
     await Firebase.initializeApp();
     final databaseReferance = await FirebaseDatabase.instance
@@ -507,20 +512,40 @@ class _ActivityScreenState extends State<ActivityScreen> {
     await databaseReferance.child(key).child("Catagory").set(selectedCatagory);
     await databaseReferance.child(key).child("Color").set(selectedColor);
 
-    if (selectedColor == "Red") {
+    if (selectedCatagory == "Man" && selectedColor == "Red") {
       markers
           .addLabelMarker(LabelMarker(
-        label: title,
-        markerId: MarkerId(title),
-        position: LatLng(latLng.latitude, latLng.longitude),
-        backgroundColor: Colors.red,
-      ))
+              label: title,
+              markerId: MarkerId(title),
+              position: LatLng(latLng.latitude, latLng.longitude),
+              backgroundColor: Colors.red,
+              draggable: false,
+              zIndex: 2,
+              flat: true,
+              anchor: Offset(0.5, 0.5),
+              icon: BitmapDescriptor.fromBytes(personData)))
           .then(
         (value) {
           setState(() {});
         },
       );
-    } else if (selectedColor == "Yellow") {
+    }
+
+    // if (selectedColor == "Red") {
+    //   markers
+    //       .addLabelMarker(LabelMarker(
+    //     label: title,
+    //     markerId: MarkerId(title),
+    //     position: LatLng(latLng.latitude, latLng.longitude),
+    //     backgroundColor: Colors.red,
+    //   ))
+    //       .then(
+    //     (value) {
+    //       setState(() {});
+    //     },
+    //   );
+    // }
+    else if (selectedColor == "Yellow") {
       markers
           .addLabelMarker(LabelMarker(
         label: title,

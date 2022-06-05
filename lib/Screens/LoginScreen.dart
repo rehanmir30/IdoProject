@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -23,10 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
   var Email, Password;
   var longi, lati;
   bool viewVisible = false;
-  bool emailError=false;
-  bool passwordError=false;
-  String errorMessage="";
-
+  bool emailError = false;
+  bool passwordError = false;
+  bool isSwitch=false;
+  var loading = false;
+  String errorMessage = "";
 
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
@@ -34,23 +36,43 @@ class _LoginScreenState extends State<LoginScreen> {
   var emailValid = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
+  String emailHintMessageEng="Email";
+  String passwordHintMessageEng="Password";
+  String forgotPasswordMessageEng="Forgot Password?";
+  String LoginText="Login";
+  String SwitchLanguage="Switch Language";
+  String Or="Or";
+  String ContinueWith="Continue with";
+  String newHere="New Here?";
+  String becomeMember="Become a member now!";
+  String emailErrorMessage="Email Required";
+  String passwordErrorMessage="Password Required";
+String Language="English";
+
   @override
   void initState() {
     requestMultiplePermissions();
     getPosition();
     checkSharedPrefs();
   }
-  checkSharedPrefs()async{
+
+  checkSharedPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final int? counter = prefs.getInt('counter');
-    if (counter!=1){
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  OnboardingScreen()));
+    final String? Lang = prefs.getString('Language');
+    if(Lang=="English"){
+      setState(() {
+        isSwitch=false;
+      });
+    }else{
+      setState(() {
+        isSwitch=false;
+      });
     }
-    else{
+    if (counter != 1) {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => OnboardingScreen()));
+    } else {
       await prefs.setInt('counter', 1);
       return;
     }
@@ -59,8 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
   getPosition() async {
     Position? position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    var lastLocation = await Geolocator.getLastKnownPosition();
-    print(lastLocation);
+
     longi = position.longitude;
     lati = position.latitude;
   }
@@ -86,19 +107,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: (email) {
                           if (email!.isEmpty || email == null) {
                             setState(() {
-                              errorMessage="Email Required";
-                              emailError=true;
+                              errorMessage = emailErrorMessage;
+                              emailError = true;
                             });
                             return " ";
                           } else if (!emailValid.hasMatch(email)) {
                             setState(() {
-                              errorMessage="Email formate not correct";
-                              emailError=true;
+                              errorMessage = "Email formate not correct";
+                              emailError = true;
                             });
                             return " ";
                           } else {
                             setState(() {
-                              emailError=false;
+                              emailError = false;
                             });
                             Email = email;
                             return null;
@@ -107,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         textAlign: TextAlign.right,
                         decoration: InputDecoration(
-                          hintText: 'Email',
+                          hintText: emailHintMessageEng,
                           fillColor: Colors.grey.shade100,
                           filled: true,
                           border: OutlineInputBorder(
@@ -118,9 +139,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Container(
                       margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                      child: Visibility(child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(errorMessage,style: TextStyle(color: Colors.red),)), visible: emailError,),
+                      child: Visibility(
+                        child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              emailErrorMessage,
+                              style: TextStyle(color: Colors.red),
+                            )),
+                        visible: emailError,
+                      ),
                     ),
                     Container(
                       margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
@@ -128,12 +155,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: (password) {
                           if (password!.isEmpty || password == null) {
                             setState(() {
-                              passwordError=true;
+                              passwordError = true;
                             });
                             return " ";
                           } else {
                             setState(() {
-                              passwordError=false;
+                              passwordError = false;
                             });
                             Password = password;
                             return null;
@@ -152,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                           ),
-                          hintText: 'Password',
+                          hintText: passwordHintMessageEng,
                           fillColor: Colors.grey.shade100,
                           filled: true,
                           border: OutlineInputBorder(
@@ -163,11 +190,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: 10),
-                      child: Visibility(child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text("Password required",style: TextStyle(color: Colors.red),)), visible: passwordError,),
+                      child: Visibility(
+                        child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              passwordErrorMessage,
+                              style: TextStyle(color: Colors.red),
+                            )),
+                        visible: passwordError,
+                      ),
                     ),
-
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Container(
@@ -181,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: Text(
-                            'Forgot password?',
+                            forgotPasswordMessageEng,
                             style: TextStyle(color: Colors.black),
                           ),
                         ),
@@ -209,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'LOG IN',
+                                    LoginText,
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   Container(
@@ -225,13 +257,76 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Container(
+                      margin: EdgeInsets.only(top: 10),
+                      child: Text(SwitchLanguage),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Container(
+                          width: 20,
+                          height: 20,
+                          child: Image.asset("assets/images/uk.png"),
+                        )),
+                        Expanded(child: Container(
+                          child:Switch(
+                           value: isSwitch,
+                            onChanged: (val)async{
+                             setState(() {
+                               isSwitch=val;
+                             });
+                             if(val==true){
+
+                               setState(() {
+                                 emailHintMessageEng="אימייל";
+                                 passwordHintMessageEng="סיסמה";
+                                 forgotPasswordMessageEng="שכחת את הסיסמ?";
+                                 LoginText="התחברות";
+                                 SwitchLanguage="החלף שפה";
+                                 Or="אוֹ";
+                                 ContinueWith="להמשיך עם";
+                                 newHere="חדש פה?";
+                                 becomeMember="הפוך לחבר עכשיו!";
+                                 emailErrorMessage="מייל(דרוש";
+                                 passwordErrorMessage="סיסמה נדרשת";
+                               });
+                               final prefs = await SharedPreferences.getInstance();
+                               await prefs.setString('Language', 'Israel');
+                             }else{
+                               final prefs = await SharedPreferences.getInstance();
+                               await prefs.setString('Language', 'English');
+                               emailHintMessageEng="Email";
+                               passwordHintMessageEng="Password";
+                               forgotPasswordMessageEng="Forgot Password?";
+                               LoginText="LOG IN";
+                               SwitchLanguage="Switch Language";
+                               Or="Or";
+                               ContinueWith="Continue with";
+                               newHere="New Here?";
+                               becomeMember="Become a member now!";
+                               emailErrorMessage="Email Required";
+                               passwordErrorMessage="Password Required";
+                             }
+                            },
+                          )
+                          ,
+                        )),
+                        Expanded(
+                            child: Container(
+                          width: 20,
+                          height: 20,
+                          child: Image.asset("assets/images/israel.png"),
+                        )),
+                      ],
+                    ),
+                    Container(
                       margin: EdgeInsets.only(top: 20, bottom: 10),
-                      child: Text('Or',
+                      child: Text(Or,
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                     ),
                     Text(
-                      'Continue with',
+                      ContinueWith,
                       style: TextStyle(
                         color: Colors.grey,
                       ),
@@ -258,7 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 60,
                             child: IconButton(
                               onPressed: () {
-                                //LoginWithFacebook();
+                                // fbLogin();
                               },
                               icon:
                                   Image.asset("assets/images/facebookicon.png"),
@@ -274,7 +369,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'New Here?',
+                          newHere,
                           style: TextStyle(color: Colors.black),
                         ),
                         TextButton(
@@ -285,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     builder: (context) => SignUpScreen()));
                           },
                           child: Text(
-                            'Become a member now!',
+                            becomeMember,
                             style: TextStyle(color: Colors.black, fontSize: 16),
                           ),
                         ),
@@ -327,35 +422,34 @@ class _LoginScreenState extends State<LoginScreen> {
       var authResult = await _auth.signInWithCredential(credential);
       // print(authResult.user!.uid);
       await getPosition();
+
       final databaseReference =
           await FirebaseDatabase.instance.reference().child("Users");
       await databaseReference.once().then((value) {
-        if (!value.snapshot.hasChild(authResult.user!.uid)) {
-          databaseReference
-              .child(authResult.user!.uid)
-              .child("Email")
-              .set(authResult.user!.email);
-          databaseReference
-              .child(authResult.user!.uid)
-              .child("Phone")
-              .set(authResult.user!.phoneNumber);
-          databaseReference
-              .child(authResult.user!.uid)
-              .child("Name")
-              .set(authResult.user!.displayName);
-          databaseReference
-              .child(authResult.user!.uid)
-              .child("Created at")
-              .set(currentTime);
-          databaseReference
-              .child(authResult.user!.uid)
-              .child("Longitude")
-              .set(longi);
-          databaseReference
-              .child(authResult.user!.uid)
-              .child("Latitude")
-              .set(lati);
-        }
+        databaseReference
+            .child(authResult.user!.uid)
+            .child("Email")
+            .set(authResult.user!.email);
+        databaseReference
+            .child(authResult.user!.uid)
+            .child("Phone")
+            .set(authResult.user!.phoneNumber);
+        databaseReference
+            .child(authResult.user!.uid)
+            .child("Name")
+            .set(authResult.user!.displayName);
+        databaseReference
+            .child(authResult.user!.uid)
+            .child("Created at")
+            .set(currentTime);
+        databaseReference
+            .child(authResult.user!.uid)
+            .child("Longitude")
+            .set(longi);
+        databaseReference
+            .child(authResult.user!.uid)
+            .child("Latitude")
+            .set(lati);
         hideWidget();
         Navigator.pushAndRemoveUntil<dynamic>(
           context,

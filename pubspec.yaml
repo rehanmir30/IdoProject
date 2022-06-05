@@ -51,6 +51,7 @@ dependencies:
   qr_code_scanner:
   qr_flutter: ^4.0.0
   liquid_pull_to_refresh: ^3.0.1
+  flutter_switch: ^0.3.2
 
 dev_dependencies:
   flutter_test:
@@ -84,6 +85,9 @@ flutter:
    - assets/images/sampleImage1.jpg
    - assets/images/sampleImage2.jpg
    - assets/images/sampleImage3.jpg
+   - assets/images/person.png
+   - assets/images/uk.png
+   - assets/images/israel.png
 
   fonts:
     - family: Mulish

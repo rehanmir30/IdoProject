@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:gumshoe/External%20Widgets/Loading.dart';
 import 'package:gumshoe/Screens/HomeScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -29,12 +30,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool passwordError = false;
   bool confirmpasswordError = false;
   bool phonenumberError = false;
+  String? Language = "hello";
 
-  String errorMessageName = "";
-  String errorMessageEmail = "";
-  String errorMessagePassword = "";
-  String errorMessageConfirmPassword = "";
-  String errorMessagePhoneNumber = "";
+  String errorMessageName = "Name Required";
+  String errorMessageEmail = "Email Required";
+  String errorMessagePassword = "Password Required";
+  String errorMessageConfirmPassword = "Confirm Password Required";
+  String errorMessagePhoneNumber = "Phone Required";
+
+  String emailHintMessageEng = "Email";
+  String nameHintMessageEng = "Name";
+  String passwordHintMessageEng = "Password";
+  String cpasswordHintMessageEng = "Confirm Password";
+  String phoneHintMessageEng = "Phone Number";
+  String register="Register";
+  String already="Already have an account?";
+  String loginNow="Login now!";
 
   var emailValid = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
@@ -42,6 +53,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     getPosition();
+    getSharedPrefs();
+  }
+
+  void getSharedPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    Language = prefs.getString('Language');
+    // Fluttertoast.showToast(msg: Language!);
+    if (Language == "English") {
+      setState(() async {
+        errorMessageName = "Name Required";
+        errorMessageEmail = "Email Required";
+        errorMessagePassword = "Password Required";
+        errorMessageConfirmPassword = "Confirm Password Required";
+        errorMessagePhoneNumber = "Phone Required";
+
+        emailHintMessageEng = "Email";
+        nameHintMessageEng = "Name";
+        passwordHintMessageEng = "Password";
+        cpasswordHintMessageEng = "Confirm Password";
+        phoneHintMessageEng = "Phone Number";
+        register="Register";
+        already="Already have an account?";
+        loginNow="Login now!";
+      });
+    } else {
+      setState(() {
+        errorMessageName = "שם (חובה";
+        errorMessageEmail = "מייל (דרוש";
+        errorMessagePassword = "סיסמה נדרשת";
+        errorMessageConfirmPassword = "אשר סיסמה נדרשת";
+        errorMessagePhoneNumber = "נדרש טלפון";
+
+        emailHintMessageEng = "אימייל";
+        nameHintMessageEng = "שֵׁם";
+        passwordHintMessageEng = "סיסמה";
+        cpasswordHintMessageEng = "אשר סיסמה";
+        phoneHintMessageEng = "מספר טלפון";
+        register="הירשם";
+        already="כבר יש לך חשבון?";
+        loginNow="התחבר עכשיו!";
+      });
+    }
   }
 
   getPosition() async {
@@ -74,7 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       validator: (name) {
                         if (name!.isEmpty || name == null) {
                           setState(() {
-                            errorMessageName = "Name Required";
+
                             nameError = true;
                           });
                           return "";
@@ -89,7 +142,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       keyboardType: TextInputType.name,
                       textAlign: TextAlign.right,
                       decoration: InputDecoration(
-                        hintText: 'Name',
+                        hintText: nameHintMessageEng,
                         fillColor: Colors.grey.shade100,
                         filled: true,
                         border: OutlineInputBorder(
@@ -116,7 +169,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       validator: (email) {
                         if (email!.isEmpty || email == null) {
                           setState(() {
-                            errorMessageEmail = "Email Required";
+
                             emailError = true;
                           });
                           return "";
@@ -137,7 +190,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       keyboardType: TextInputType.emailAddress,
                       textAlign: TextAlign.right,
                       decoration: InputDecoration(
-                        hintText: 'Email',
+                        hintText: emailHintMessageEng,
                         fillColor: Colors.grey.shade100,
                         filled: true,
                         border: OutlineInputBorder(
@@ -164,7 +217,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       validator: (password) {
                         if (password!.isEmpty || password == null) {
                           setState(() {
-                            errorMessagePassword = "Password Required";
+
                             passwordError = true;
                           });
                           return "";
@@ -196,7 +249,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             });
                           },
                         ),
-                        hintText: 'Password',
+                        hintText: passwordHintMessageEng,
                         fillColor: Colors.grey.shade100,
                         filled: true,
                         border: OutlineInputBorder(
@@ -224,8 +277,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         if (confirm_password!.isEmpty ||
                             confirm_password == null) {
                           setState(() {
-                            errorMessageConfirmPassword =
-                                "Confirm Password Required";
+
                             confirmpasswordError = true;
                           });
                           return "";
@@ -236,10 +288,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             confirmpasswordError = true;
                           });
                           return "";
-                        }else if (confirm_password!=Password) {
+                        } else if (confirm_password != Password) {
                           setState(() {
                             errorMessageConfirmPassword =
-                            "Passwords don't match";
+                                "Passwords don't match";
                             confirmpasswordError = true;
                           });
                           return "";
@@ -264,7 +316,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             });
                           },
                         ),
-                        hintText: 'Confirm Password',
+                        hintText: cpasswordHintMessageEng,
                         fillColor: Colors.grey.shade100,
                         filled: true,
                         border: OutlineInputBorder(
@@ -291,7 +343,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       validator: (phone_number) {
                         if (phone_number!.isEmpty || phone_number == null) {
                           setState(() {
-                            errorMessagePhoneNumber = "Phone Required";
+
                             phonenumberError = true;
                           });
                           return "";
@@ -306,7 +358,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.right,
                       decoration: InputDecoration(
-                        hintText: 'Phone Number',
+                        hintText: phoneHintMessageEng,
                         fillColor: Colors.grey.shade100,
                         filled: true,
                         border: OutlineInputBorder(
@@ -349,7 +401,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('REGISTER'),
+                                Text(register),
                                 Icon(
                                   Icons.content_paste_rounded,
                                   color: Colors.white,
@@ -372,7 +424,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Already have an account?',
+                        already,
                         style: TextStyle(color: Colors.black),
                       ),
                       TextButton(
@@ -380,7 +432,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           Navigator.pop(context);
                         },
                         child: Text(
-                          'Login now!',
+                          loginNow,
                           style: TextStyle(color: Colors.black, fontSize: 16),
                         ),
                       ),

@@ -44,7 +44,20 @@ class _messagesState extends State<messages> {
             QueryDocumentSnapshot qs = snapshot.data!.docs[index];
             Timestamp t = qs['time'];
             DateTime d = t.toDate();
-            print(d.toString());
+            String hour=d.hour.toString();
+            String mint=d.minute.toString();
+            if(hour.length==1){
+              setState(() {
+                hour="0"+hour;
+              });
+            }
+            if(mint.length==1){
+              setState(() {
+                mint="0"+mint;
+              });
+            }
+           // print("date length "+hour.length.toString());
+
             return Padding(
               padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Column(
@@ -81,7 +94,7 @@ class _messagesState extends State<messages> {
                             ),
                           ),
                           Text(
-                            d.hour.toString() + ":" + d.minute.toString(),
+                            hour + ":" + mint,
                           )
                         ],
                       ),
